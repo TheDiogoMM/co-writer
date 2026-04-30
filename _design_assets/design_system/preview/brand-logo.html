@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); padding: 20px; font-family: var(--font-ui); display: flex; flex-direction: column; gap: 20px; }
+  .section-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 8px; }
+  .row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+
+  /* colour tile */
+  .tile { border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+</style>
+</head>
+<body>
+
+  <!-- Vertical logo (original) -->
+  <div>
+    <div class="section-label">Full logo — vertical</div>
+    <img src="../assets/logo-full.jpg" alt="Co-Writer full logo" style="height:140px; object-fit:contain;">
+  </div>
+
+  <!-- Horizontal lockup -->
+  <div>
+    <div class="section-label">Horizontal lockup</div>
+    <img src="../assets/logo-horizontal.png" alt="Co-Writer horizontal" style="height:72px; object-fit:contain; background:var(--paper-mid); border-radius:6px; padding:6px 12px;">
+  </div>
+
+  <!-- Text-only wordmark -->
+  <div>
+    <div class="section-label">Text wordmark + icon (no background)</div>
+    <div class="row" style="align-items:center;">
+      <img src="../assets/logo-text.png" alt="Co-Writer text logo" style="height:56px; object-fit:contain;">
+      <img src="../assets/logo-icon-nobg.png" alt="Co-Writer icon" style="height:72px; object-fit:contain;">
+      <img src="../assets/logo-icon-app.png" alt="Co-Writer app icon" style="height:72px; object-fit:contain; border-radius:16px;">
+    </div>
+  </div>
+
+  <!-- Wordmark on colour backgrounds -->
+  <div>
+    <div class="section-label">Wordmark on colour backgrounds</div>
+    <div class="row">
+      <div class="tile" style="background:var(--ink);">
+        <img src="../assets/logo-text.png" alt="logo on dark" style="height:40px; object-fit:contain; filter:brightness(0) invert(1);">
+      </div>
+      <div class="tile" style="background:var(--bronze);">
+        <img src="../assets/logo-text.png" alt="logo on bronze" style="height:40px; object-fit:contain; filter:brightness(0) invert(1);">
+      </div>
+      <div class="tile" style="background:white; border:1px solid var(--paper-dark);">
+        <img src="../assets/logo-text.png" alt="logo on white" style="height:40px; object-fit:contain;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Icon sizes -->
+  <div>
+    <div class="section-label">App icon at various sizes</div>
+    <div style="display:flex; gap:12px; align-items:flex-end;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img src="../assets/logo-icon-app.png" style="width:80px;height:80px;border-radius:18px;object-fit:cover;">
+        <span style="font-size:9px;color:var(--ink-light)">80px</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img src="../assets/logo-icon-app.png" style="width:48px;height:48px;border-radius:11px;object-fit:cover;">
+        <span style="font-size:9px;color:var(--ink-light)">48px</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img src="../assets/logo-icon-app.png" style="width:32px;height:32px;border-radius:7px;object-fit:cover;">
+        <span style="font-size:9px;color:var(--ink-light)">32px</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img src="../assets/logo-icon-nobg.png" style="width:48px;height:48px;object-fit:contain;">
+        <span style="font-size:9px;color:var(--ink-light)">no bg</span>
+      </div>
+      <div style="background:var(--ink);padding:8px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <img src="../assets/logo-icon-nobg.png" style="width:48px;height:48px;object-fit:contain;">
+        <span style="font-size:9px;color:var(--ink-light)">on dark</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

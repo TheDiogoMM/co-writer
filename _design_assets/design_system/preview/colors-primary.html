@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); font-family: var(--font-ui); padding: 20px; }
+  .row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .swatch { flex: 1; height: 64px; border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: flex-end; padding: 6px 8px; }
+  .swatch span { font-size: 10px; font-weight: 500; }
+  .swatch .name { color: rgba(255,255,255,0.7); }
+  .swatch .val  { color: rgba(255,255,255,0.5); font-size: 9px; }
+  .dark .name, .dark .val { color: rgba(26,35,50,0.45); }
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-light); text-transform: uppercase; margin-bottom: 6px; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="section-label">Ink Scale</div>
+  <div class="row">
+    <div class="swatch" style="background:#0d1520"><span class="name">ink-900</span><span class="val">#0d1520</span></div>
+    <div class="swatch" style="background:#1a2332"><span class="name">ink</span><span class="val">#1a2332</span></div>
+    <div class="swatch" style="background:#2b3a55"><span class="name">ink-mid</span><span class="val">#2b3a55</span></div>
+    <div class="swatch" style="background:#4a607e"><span class="name">ink-500</span><span class="val">#4a607e</span></div>
+    <div class="swatch" style="background:#8a9bb0"><span class="name">ink-light</span><span class="val">#8a9bb0</span></div>
+    <div class="swatch" style="background:#bcc8d8"><span class="name">ink-200</span><span class="val">#bcc8d8</span></div>
+  </div>
+  <div class="section-label">Paper Scale</div>
+  <div class="row">
+    <div class="swatch dark" style="background:#ffffff; border: 1px solid #d8d2c8;"><span class="name" style="color:#8a9bb0">white</span><span class="val" style="color:#bcc8d8">#ffffff</span></div>
+    <div class="swatch dark" style="background:#f8f6f2; border: 1px solid #d8d2c8;"><span class="name" style="color:#8a9bb0">paper</span><span class="val" style="color:#bcc8d8">#f8f6f2</span></div>
+    <div class="swatch dark" style="background:#ede9e1; border: 1px solid #d8d2c8;"><span class="name" style="color:#8a9bb0">paper-mid</span><span class="val" style="color:#bcc8d8">#ede9e1</span></div>
+    <div class="swatch dark" style="background:#d8d2c8;"><span class="name" style="color:#8a9bb0">paper-dark</span><span class="val" style="color:#bcc8d8">#d8d2c8</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); padding: 20px; }
+  .row { display: flex; align-items: baseline; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--paper-dark); }
+  .token { font-family: var(--font-mono); font-size: 10px; color: var(--ink-light); width: 80px; flex-shrink: 0; }
+  .size  { font-family: var(--font-ui); font-size: 10px; color: var(--ink-200); width: 30px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <div class="row"><span class="token">--text-xs</span><span class="size">12px</span><span style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink)">Caption text, footnotes, timestamps</span></div>
+  <div class="row"><span class="token">--text-sm</span><span class="size">14px</span><span style="font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink)">UI labels, metadata, secondary text</span></div>
+  <div class="row"><span class="token">--text-base</span><span class="size">16px</span><span style="font-family:'Lora',serif;font-size:16px;color:var(--ink)">Body text — default reading size</span></div>
+  <div class="row"><span class="token">--text-md</span><span class="size">18px</span><span style="font-family:'Lora',serif;font-size:18px;color:var(--ink)">Lead paragraph, intro copy</span></div>
+  <div class="row"><span class="token">--text-lg</span><span class="size">20px</span><span style="font-family:'Playfair Display',serif;font-size:20px;color:var(--ink)">Sidebar headings, card titles</span></div>
+  <div class="row"><span class="token">--text-xl</span><span class="size">24px</span><span style="font-family:'Playfair Display',serif;font-size:24px;color:var(--ink)">Section headings — H2</span></div>
+  <div class="row"><span class="token">--text-2xl</span><span class="size">32px</span><span style="font-family:'Playfair Display',serif;font-size:32px;color:var(--ink)">Page headings — H1</span></div>
+  <div class="row"><span class="token">--text-4xl</span><span class="size">56px</span><span style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:0.08em;color:var(--ink);line-height:1">Display — CO-WRITER</span></div>
+</body>
+</html>

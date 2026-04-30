@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@layer base {
+  html, body {
+    height: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-ink leading-tight;
+  }
+
+  h1 { @apply text-4xl font-bold; }
+  h2 { @apply text-3xl font-bold; }
+  h3 { @apply text-2xl font-semibold; }
+  h4 { @apply text-xl font-semibold; }
+
+  p {
+    @apply font-serif text-base leading-relaxed text-ink-700;
+  }
+}

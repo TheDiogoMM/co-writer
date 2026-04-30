@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper-mid); padding: 20px; font-family: var(--font-ui); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 10px; }
+
+  /* Base card */
+  .card { background: white; border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--paper-dark); }
+
+  /* Document card */
+  .doc-card { width: 140px; }
+  .doc-card .doc-title { font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .doc-card .doc-meta { font-size: 10px; color: var(--ink-light); }
+  .doc-card .doc-excerpt { font-family: var(--font-body); font-size: 11px; color: var(--ink-mid); line-height: 1.5; margin-top: 6px; font-style: italic; }
+
+  /* Panel card */
+  .panel { background: var(--paper); border: 1px solid var(--paper-dark); border-radius: var(--radius-md); padding: 14px; width: 200px; box-shadow: var(--shadow-xs); }
+  .panel-title { font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+  .panel-body { font-family: var(--font-body); font-size: 12px; color: var(--ink-mid); line-height: 1.6; }
+
+  /* Sidebar item */
+  .sidebar-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; }
+  .sidebar-item.active { background: var(--paper-mid); border-left: 2px solid var(--bronze); padding-left: 8px; }
+  .sidebar-item .si-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .sidebar-item .si-meta { font-size: 10px; color: var(--ink-light); }
+  .sidebar-list { background: var(--paper-mid); border-radius: var(--radius-md); padding: 8px; width: 200px; border: 1px solid var(--paper-dark); }
+</style>
+</head>
+<body>
+  <div class="label">Document Cards</div>
+  <div class="row" style="margin-bottom:14px">
+    <div class="card doc-card">
+      <div class="doc-title">The Dark Tower</div>
+      <div class="doc-meta">Chapter 12 · 3,400 words</div>
+      <div class="doc-excerpt">"The man in black fled across the desert…"</div>
+    </div>
+    <div class="card doc-card" style="box-shadow:var(--shadow-md); transform:translateY(-2px)">
+      <div class="doc-title">Untitled Script</div>
+      <div class="doc-meta">Scene 4 · 890 words</div>
+      <div class="doc-excerpt">EXT. DOWNTOWN — NIGHT</div>
+    </div>
+    <div class="card doc-card" style="border-color:var(--bronze); box-shadow:0 2px 8px rgba(184,149,106,0.2)">
+      <div class="doc-title">Persona Active</div>
+      <div class="doc-meta">Co-Writer: King</div>
+      <div class="doc-excerpt" style="color:var(--violet); font-style:normal; font-size:10px; font-family:var(--font-ui); font-weight:500">✦ Rewrite in progress</div>
+    </div>
+  </div>
+  <div class="label">Sidebar Navigation</div>
+  <div class="row">
+    <div class="sidebar-list">
+      <div class="sidebar-item active"><div><div class="si-title">The Dark Tower</div><div class="si-meta">3,400 words</div></div></div>
+      <div class="sidebar-item"><div><div class="si-title">Untitled Script</div><div class="si-meta">890 words</div></div></div>
+      <div class="sidebar-item"><div><div class="si-title">Short Story Draft</div><div class="si-meta">1,200 words</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">AI Suggestion</div>
+      <div class="panel-body">"Consider a longer sentence here — King often builds tension through accumulation."</div>
+      <div style="margin-top:8px; font-size:11px; color:var(--violet); font-weight:600; font-family:var(--font-ui)">✦ Apply · Dismiss</div>
+    </div>
+  </div>
+</body>
+</html>

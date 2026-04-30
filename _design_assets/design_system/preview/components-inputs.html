@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Courier+Prime&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); padding: 20px; font-family: var(--font-ui); }
+  .row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; flex-wrap: wrap; }
+  .label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 8px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--ink-mid); }
+  input, textarea, select {
+    font-family: var(--font-ui); font-size: 13px;
+    background: white; color: var(--ink);
+    border: 1px solid var(--paper-dark); border-radius: var(--radius-sm);
+    padding: 8px 10px; outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--bronze); box-shadow: 0 0 0 3px rgba(184,149,106,0.15);
+  }
+  input.error { border-color: #c0392b; }
+  input.success { border-color: var(--forest); }
+  textarea { resize: vertical; min-height: 60px; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; }
+  .badge-ai { background: var(--violet-100); color: var(--violet-dark); }
+  .badge-fmt { background: var(--forest-100); color: var(--forest-dark); }
+  .badge-new { background: var(--bronze-100); color: var(--bronze-900); }
+</style>
+</head>
+<body>
+  <div class="label">Text Inputs</div>
+  <div class="row">
+    <div class="field">
+      <label>Document title</label>
+      <input type="text" placeholder="Untitled manuscript…" style="width:180px">
+    </div>
+    <div class="field">
+      <label>Focused state</label>
+      <input type="text" value="Chapter One" style="width:150px; border-color:var(--bronze); box-shadow:0 0 0 3px rgba(184,149,106,0.15)">
+    </div>
+    <div class="field">
+      <label>Error state</label>
+      <input type="text" class="error" value="invalid" style="width:130px">
+    </div>
+    <div class="field">
+      <label>Success state</label>
+      <input type="text" class="success" value="Saved" style="width:120px">
+    </div>
+  </div>
+  <div class="label">Textarea &amp; Select</div>
+  <div class="row">
+    <div class="field">
+      <label>Notes</label>
+      <textarea placeholder="Add a note about this passage…" style="width:240px"></textarea>
+    </div>
+    <div class="field">
+      <label>Choose persona</label>
+      <select style="width:180px">
+        <option>Stephen King</option>
+        <option>Quentin Tarantino</option>
+        <option>J.R.R. Tolkien</option>
+        <option>Neil Gaiman</option>
+      </select>
+    </div>
+  </div>
+  <div class="label">Badges</div>
+  <div class="row">
+    <span class="badge badge-ai">✦ AI Rewrite</span>
+    <span class="badge badge-fmt">Screenplay</span>
+    <span class="badge badge-new">New persona</span>
+  </div>
+</body>
+</html>

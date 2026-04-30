@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); font-family: var(--font-ui); padding: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .token { background: var(--paper-mid); border-radius: var(--radius-sm); padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+  .dot { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+  .name { font-size: 11px; font-weight: 600; color: var(--ink); font-family: var(--font-mono); }
+  .desc { font-size: 10px; color: var(--ink-light); margin-top: 1px; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="token"><div class="dot" style="background:#1a2332"></div><div><div class="name">--color-text</div><div class="desc">Primary body text</div></div></div>
+    <div class="token"><div class="dot" style="background:#8a9bb0"></div><div><div class="name">--color-text-muted</div><div class="desc">Labels, placeholders</div></div></div>
+    <div class="token"><div class="dot" style="background:#f8f6f2; border:1px solid #d8d2c8"></div><div><div class="name">--color-bg</div><div class="desc">Page background</div></div></div>
+    <div class="token"><div class="dot" style="background:#ede9e1; border:1px solid #d8d2c8"></div><div><div class="name">--color-bg-subtle</div><div class="desc">Cards, sidebars</div></div></div>
+    <div class="token"><div class="dot" style="background:#b8956a"></div><div><div class="name">--color-accent</div><div class="desc">Primary interactions</div></div></div>
+    <div class="token"><div class="dot" style="background:#7c5cbf"></div><div><div class="name">--color-accent-ai</div><div class="desc">AI / Persona features</div></div></div>
+    <div class="token"><div class="dot" style="background:#3d7a5a"></div><div><div class="name">--color-accent-fmt</div><div class="desc">Screenplay / Format</div></div></div>
+    <div class="token"><div class="dot" style="background:#d8d2c8"></div><div><div class="name">--color-border</div><div class="desc">Lines, dividers</div></div></div>
+    <div class="token"><div class="dot" style="background:#3d7a5a"></div><div><div class="name">--color-success</div><div class="desc">Saved, confirmed</div></div></div>
+    <div class="token"><div class="dot" style="background:#c9a227"></div><div><div class="name">--color-warning</div><div class="desc">Caution states</div></div></div>
+    <div class="token"><div class="dot" style="background:#c0392b"></div><div><div class="name">--color-error</div><div class="desc">Errors, destructive</div></div></div>
+    <div class="token"><div class="dot" style="background:#7c5cbf"></div><div><div class="name">--color-info</div><div class="desc">Info, AI hints</div></div></div>
+  </div>
+</body>
+</html>

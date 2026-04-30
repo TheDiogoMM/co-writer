@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); font-family: var(--font-ui); padding: 20px; }
+  .group { margin-bottom: 10px; }
+  .row { display: flex; gap: 6px; }
+  .swatch { flex: 1; height: 52px; border-radius: var(--radius-sm); display: flex; flex-direction: column; justify-content: flex-end; padding: 5px 7px; }
+  .swatch .name { font-size: 9px; font-weight: 500; color: rgba(255,255,255,0.7); }
+  .swatch .val  { font-size: 8px; color: rgba(255,255,255,0.45); }
+  .group-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 5px; }
+</style>
+</head>
+<body>
+  <div class="group">
+    <div class="group-label">Bronze — Primary Accent</div>
+    <div class="row">
+      <div class="swatch" style="background:#fdf5ed; border:1px solid #d8d2c8"><span class="name" style="color:#b8956a">50</span><span class="val" style="color:#d4b896">#fdf5ed</span></div>
+      <div class="swatch" style="background:#d4b896"><span class="name">light</span><span class="val">#d4b896</span></div>
+      <div class="swatch" style="background:#b8956a"><span class="name">bronze</span><span class="val">#b8956a</span></div>
+      <div class="swatch" style="background:#9a7a52"><span class="name">dark</span><span class="val">#9a7a52</span></div>
+      <div class="swatch" style="background:#7a5c35"><span class="name">900</span><span class="val">#7a5c35</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Gold — Highlight / AI Spark</div>
+    <div class="row">
+      <div class="swatch" style="background:#e8cc7a"><span class="name" style="color:#7a5c35">light</span><span class="val" style="color:#9a7a52">#e8cc7a</span></div>
+      <div class="swatch" style="background:#c9a227"><span class="name">gold</span><span class="val">#c9a227</span></div>
+      <div class="swatch" style="background:#a8841a"><span class="name">dark</span><span class="val">#a8841a</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Violet — AI / Persona</div>
+    <div class="row">
+      <div class="swatch" style="background:#ede5f9; border:1px solid #d8d2c8"><span class="name" style="color:#7c5cbf">100</span><span class="val" style="color:#a98de0">#ede5f9</span></div>
+      <div class="swatch" style="background:#a98de0"><span class="name">light</span><span class="val">#a98de0</span></div>
+      <div class="swatch" style="background:#7c5cbf"><span class="name">violet</span><span class="val">#7c5cbf</span></div>
+      <div class="swatch" style="background:#5e3fa3"><span class="name">dark</span><span class="val">#5e3fa3</span></div>
+      <div class="swatch" style="background:#3d2478"><span class="name">900</span><span class="val">#3d2478</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Forest — Screenplay / Format</div>
+    <div class="row">
+      <div class="swatch" style="background:#d8f0e4; border:1px solid #d8d2c8"><span class="name" style="color:#3d7a5a">100</span><span class="val" style="color:#5aa37a">#d8f0e4</span></div>
+      <div class="swatch" style="background:#5aa37a"><span class="name">light</span><span class="val">#5aa37a</span></div>
+      <div class="swatch" style="background:#3d7a5a"><span class="name">forest</span><span class="val">#3d7a5a</span></div>
+      <div class="swatch" style="background:#2a5c3f"><span class="name">dark</span><span class="val">#2a5c3f</span></div>
+    </div>
+  </div>
+</body>
+</html>

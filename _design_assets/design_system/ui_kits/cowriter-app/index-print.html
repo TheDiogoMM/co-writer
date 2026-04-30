@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body { background: white; font-family: 'DM Sans', sans-serif; }
+
+  @page { size: landscape; margin: 0; }
+
+  .page {
+    width: 297mm; height: 210mm;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    break-before: page; break-inside: avoid;
+    position: relative;
+  }
+  .page:first-child { break-before: avoid; }
+
+  /* ── PAGE 1: Welcome screen ── */
+  .welcome {
+    background: #1a2332;
+    align-items: center; justify-content: center; gap: 0;
+  }
+  .welcome-logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 36px; }
+  .welcome-wordmark { font-family: 'Alfa Slab One', serif; font-size: 52px; letter-spacing: 0.04em; color: #b8956a; line-height: 1; }
+  .welcome-tagline  { font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 300; letter-spacing: 0.22em; color: #4a607e; text-transform: uppercase; margin-top: 5px; }
+  .welcome-card {
+    background: white; border-radius: 12px; padding: 36px 44px;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.4); text-align: center; width: 400px;
+  }
+  .welcome-card h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #1a2332; margin-bottom: 8px; }
+  .welcome-card p  { font-family: 'Lora', serif; font-size: 13px; line-height: 1.7; color: #4a607e; font-style: italic; margin-bottom: 28px; }
+  .btn-primary { background: #b8956a; color: white; border: none; border-radius: 4px; padding: 11px 24px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; display: block; width: 100%; margin-bottom: 8px; }
+  .btn-outline  { background: transparent; color: #7c5cbf; border: 1.5px solid #7c5cbf; border-radius: 4px; padding: 10px 24px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; display: block; width: 100%; }
+
+  /* ── PAGE 2: Main editor ── */
+  .app { flex-direction: column; }
+
+  .topbar {
+    height: 40px; background: #1a2332; display: flex; align-items: center;
+    padding: 0 16px; gap: 10px; flex-shrink: 0;
+  }
+  .topbar-brand { font-family: 'Alfa Slab One', serif; font-size: 16px; letter-spacing: 0.03em; color: #b8956a; margin-right: 8px; }
+  .topbar-nav { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #8a9bb0; }
+  .topbar-title { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #bcc8d8; }
+  .topbar-avatar { width: 24px; height: 24px; border-radius: 50%; background: #b8956a; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; color: white; font-size: 11px; font-weight: 700; }
+
+  .app-body { flex: 1; display: flex; overflow: hidden; }
+
+  .sidebar {
+    width: 220px; min-width: 220px; background: #ede9e1;
+    border-right: 1px solid #d8d2c8; display: flex; flex-direction: column;
+  }
+  .sidebar-header { padding: 10px 12px; border-bottom: 1px solid #d8d2c8; }
+  .sidebar-new { background: #b8956a; color: white; border: none; border-radius: 4px; padding: 7px 10px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; width: 100%; display: flex; align-items: center; gap: 6px; }
+  .sidebar-section { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9bb0; padding: 8px 14px 4px; }
+  .doc-item { padding: 8px 10px; border-left: 2px solid transparent; }
+  .doc-item.active { background: white; border-left-color: #b8956a; }
+  .doc-title { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; color: #1a2332; }
+  .doc-meta  { font-family: 'DM Sans', sans-serif; font-size: 10px; color: #8a9bb0; margin-top: 1px; }
+
+  .toolbar {
+    height: 40px; background: white; border-bottom: 1px solid #d8d2c8;
+    display: flex; align-items: center; padding: 0 14px; gap: 4px; flex-shrink: 0;
+  }
+  .tb-select { font-family: 'DM Sans', sans-serif; font-size: 11px; border: 1px solid #d8d2c8; border-radius: 3px; padding: 2px 5px; color: #1a2332; background: white; }
+  .tb-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #2b3a55; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12px; border-radius: 3px; }
+  .tb-divider { width: 1px; height: 18px; background: #d8d2c8; margin: 0 3px; }
+  .tb-screenplay { background: transparent; color: #3d7a5a; border: 1px solid #d8d2c8; border-radius: 3px; padding: 3px 8px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; }
+
+  .editor-area { flex: 1; background: #ede9e1; display: flex; justify-content: center; padding: 28px 20px; overflow: hidden; }
+  .page-canvas { background: white; box-shadow: 0 8px 40px rgba(26,35,50,0.14); padding: 44px 56px; width: 100%; max-width: 580px; }
+  .doc-heading { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #1a2332; margin-bottom: 6px; }
+  .doc-meta-line { font-family: 'DM Sans', sans-serif; font-size: 10px; color: #8a9bb0; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #ede9e1; }
+  .prose { font-family: 'Lora', serif; font-size: 13px; line-height: 1.8; color: #243347; }
+
+  .persona-panel {
+    width: 240px; min-width: 240px; background: #f8f6f2;
+    border-left: 1px solid #d8d2c8; display: flex; flex-direction: column;
+  }
+  .panel-header { height: 40px; padding: 0 14px; display: flex; align-items: center; border-bottom: 1px solid #d8d2c8; }
+  .panel-label { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #4a607e; }
+  .ai-badge { font-size: 9px; font-weight: 600; color: #7c5cbf; background: #ede5f9; border-radius: 999px; padding: 2px 6px; margin-left: auto; }
+  .persona-card { background: white; border: 1px solid #d8d2c8; border-radius: 8px; margin: 12px; padding: 12px; }
+  .persona-info { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .persona-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#2b3a55,#1a2332); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; font-style: italic; color: white; }
+  .persona-name { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; color: #1a2332; }
+  .persona-genre { font-size: 9px; color: #8a9bb0; }
+  .btn-rewrite { background: #7c5cbf; color: white; border: none; border-radius: 4px; padding: 8px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; width: 100%; margin-bottom: 6px; }
+  .btn-continue { background: transparent; color: #7c5cbf; border: 1.5px solid #7c5cbf; border-radius: 4px; padding: 7px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; width: 100%; }
+  .voice-note { background: white; border: 1px solid #d8d2c8; border-radius: 8px; margin: 0 12px 12px; padding: 10px; }
+  .note-label { font-size: 9px; font-weight: 600; color: #4a607e; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+  .note-text { font-family: 'Lora', serif; font-size: 11px; line-height: 1.5; color: #2b3a55; font-style: italic; }
+
+  /* persona grid */
+  .persona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 12px; }
+  .pg-item { border: 1.5px solid #d8d2c8; border-radius: 7px; padding: 6px 7px; display: flex; align-items: center; gap: 6px; }
+  .pg-item.active { border-color: #7c5cbf; }
+  .pg-avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 10px; font-weight: 700; font-style: italic; color: white; }
+  .pg-name { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500; color: #1a2332; }
+</style>
+</head>
+<body>
+
+<!-- ── PAGE 1: Welcome ── -->
+<div class="page welcome">
+  <div class="welcome-logo">
+    <div class="welcome-wordmark">CO-WRITER</div>
+    <div class="welcome-tagline">Intelligent Narrative Partner</div>
+  </div>
+  <div class="welcome-card">
+    <h2>Welcome back, Writer.</h2>
+    <p>Your manuscripts, your personas, your voice — all in one place.</p>
+    <button class="btn-primary">Open my documents</button>
+    <button class="btn-outline">✦ Start with a persona</button>
+  </div>
+  <div style="margin-top:28px; font-family:'DM Sans',sans-serif; font-size:10px; color:#2b3a55; letter-spacing:0.05em;">Co-Writer · UI Kit Prototype</div>
+</div>
+
+<!-- ── PAGE 2: Main editor ── -->
+<div class="page app">
+
+  <!-- Top nav -->
+  <div class="topbar">
+    <span class="topbar-brand">CO-WRITER</span>
+    <span class="topbar-nav">File</span>
+    <span class="topbar-nav">Edit</span>
+    <span class="topbar-nav">Format</span>
+    <span class="topbar-nav">View</span>
+    <div style="flex:1"></div>
+    <span class="topbar-title">The Dark Tower</span>
+    <div style="flex:1"></div>
+    <div class="topbar-avatar">W</div>
+  </div>
+
+  <!-- Body -->
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <button class="sidebar-new">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New document
+        </button>
+      </div>
+      <div class="sidebar-section">My Documents</div>
+      <div class="doc-item active">
+        <div class="doc-title">The Dark Tower</div>
+        <div class="doc-meta">3,400 words</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-title">Pulp Fiction — Scene 4</div>
+        <div class="doc-meta">890 words</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-title">Short Story Draft</div>
+        <div class="doc-meta">1,200 words</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-title">Midnight Children</div>
+        <div class="doc-meta">520 words</div>
+      </div>
+    </div>
+
+    <!-- Editor column -->
+    <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <select class="tb-select"><option>Lora (Body)</option></select>
+        <select class="tb-select" style="width:46px"><option>16</option></select>
+        <div class="tb-divider"></div>
+        <button class="tb-btn"><b>B</b></button>
+        <button class="tb-btn"><i style="font-family:serif">I</i></button>
+        <button class="tb-btn"><u>U</u></button>
+        <div class="tb-divider"></div>
+        <button class="tb-screenplay">Screenplay</button>
+        <div style="flex:1"></div>
+        <span style="font-size:10px;color:#8a9bb0;font-family:'DM Sans',sans-serif">3,400 words</span>
+        <div style="display:flex;align-items:center;gap:4px;margin-left:10px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#3d7a5a"></div>
+          <span style="font-size:10px;color:#8a9bb0;font-family:'DM Sans',sans-serif">Saved</span>
+        </div>
+      </div>
+
+      <!-- Editor canvas -->
+      <div class="editor-area">
+        <div class="page-canvas">
+          <div class="doc-heading">The Dark Tower</div>
+          <div class="doc-meta-line">Book I · 3,400 words · Last edited just now</div>
+          <div class="prose">
+            <p style="margin-bottom:14px"><strong>Chapter One: The Gunslinger</strong></p>
+            <p style="margin-bottom:14px">The man in black fled across the desert, and the gunslinger followed.</p>
+            <p style="margin-bottom:14px">The desert was the apotheosis of all deserts, huge, standing to the sky for what might have been parsecs in all directions. White; blinding; waterless; without feature save for the faint, cloudy haze of the mountains which sketched themselves on the horizon.</p>
+            <p>An occasional tombstone sign pointed the way, for once the drifted track that cut its way through the thick crust of alkali had been a road which bore a name. That name was long since forgotten.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Persona panel -->
+    <div class="persona-panel">
+      <div class="panel-header">
+        <span class="panel-label">Persona</span>
+        <span class="ai-badge">✦ AI</span>
+      </div>
+      <div class="persona-card">
+        <div class="persona-info">
+          <div class="persona-avatar">K</div>
+          <div>
+            <div class="persona-name">Stephen King</div>
+            <div class="persona-genre">Horror · Thriller</div>
+          </div>
+          <div style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#3d7a5a"></div>
+        </div>
+        <button class="btn-rewrite">✦ Rewrite in this voice</button>
+        <button class="btn-continue">✦ Continue story</button>
+      </div>
+      <div class="voice-note">
+        <div class="note-label">Voice note</div>
+        <div class="note-text">"King often builds dread through mundane detail — consider slowing this moment down."</div>
+      </div>
+      <div style="font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#8a9bb0;margin:0 12px 6px;">Switch persona</div>
+      <div class="persona-grid">
+        <div class="pg-item active">
+          <div class="pg-avatar" style="background:linear-gradient(135deg,#2b3a55,#1a2332)">K</div>
+          <div class="pg-name">King</div>
+        </div>
+        <div class="pg-item">
+          <div class="pg-avatar" style="background:linear-gradient(135deg,#9a7a52,#7a5c35)">T</div>
+          <div class="pg-name">Tarantino</div>
+        </div>
+        <div class="pg-item">
+          <div class="pg-avatar" style="background:linear-gradient(135deg,#3d7a5a,#2a5c3f)">To</div>
+          <div class="pg-name">Tolkien</div>
+        </div>
+        <div class="pg-item">
+          <div class="pg-avatar" style="background:linear-gradient(135deg,#7c5cbf,#5e3fa3)">G</div>
+          <div class="pg-name">Gaiman</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- app-body -->
+</div><!-- page 2 -->
+
+<script>
+document.fonts.ready.then(() => {
+  setTimeout(() => window.print(), 500);
+});
+</script>
+</body>
+</html>

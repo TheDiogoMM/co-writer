@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); padding: 20px; font-family: var(--font-ui); }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 8px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: var(--font-ui); font-weight: 600; letter-spacing: 0.03em; transition: all 150ms ease; }
+  .btn-primary { background: var(--bronze); color: white; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; }
+  .btn-primary:hover { background: var(--bronze-dark); }
+  .btn-secondary { background: transparent; color: var(--ink); padding: 8px 17px; border-radius: var(--radius-sm); font-size: 13px; border: 1px solid var(--paper-dark); }
+  .btn-ai { background: var(--violet); color: white; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; }
+  .btn-ai:hover { background: var(--violet-dark); }
+  .btn-fmt { background: var(--forest); color: white; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; }
+  .btn-ghost { background: transparent; color: var(--bronze); padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; border: 1.5px solid var(--bronze); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: #c0392b; color: white; padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; }
+  .btn-disabled { background: var(--paper-dark); color: var(--ink-200); padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <div class="label">Primary Actions</div>
+  <div class="row">
+    <button class="btn btn-primary">Save document</button>
+    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-ghost">View history</button>
+    <button class="btn btn-danger">Delete</button>
+    <button class="btn btn-disabled" disabled>Unavailable</button>
+  </div>
+  <div class="label">AI Feature Buttons</div>
+  <div class="row">
+    <button class="btn btn-ai">✦ Rewrite in this voice</button>
+    <button class="btn btn-fmt">Apply screenplay format</button>
+  </div>
+  <div class="label">Small Variants</div>
+  <div class="row">
+    <button class="btn btn-primary btn-sm">Save</button>
+    <button class="btn btn-secondary btn-sm">Cancel</button>
+    <button class="btn btn-ai btn-sm">✦ Continue story</button>
+    <button class="btn btn-ghost btn-sm">Rename</button>
+  </div>
+</body>
+</html>

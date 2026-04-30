@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co-Writer — Intelligent Narrative Partner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { height: 100%; overflow: hidden; }
+body { background: #ede9e1; font-family: 'DM Sans', sans-serif; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d8d2c8; border-radius: 3px; }
+</style>
+
+<template id="__bundler_thumbnail" data-bg-color="#1a2332">
+  <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+    <!-- Dark nav bar -->
+    <rect width="800" height="500" fill="#1a2332"/>
+    <rect y="0" width="800" height="44" fill="#0d1520"/>
+    <text x="20" y="29" font-family="serif" font-size="22" font-weight="bold" fill="#b8956a" letter-spacing="3">CO-WRITER</text>
+    <!-- Sidebar -->
+    <rect x="0" y="44" width="200" height="456" fill="#ede9e1"/>
+    <rect x="0" y="44" width="200" height="456" fill="#ede9e1" stroke="#d8d2c8" stroke-width="1"/>
+    <rect x="12" y="60" width="176" height="32" rx="4" fill="#b8956a"/>
+    <rect x="12" y="104" width="140" height="10" rx="2" fill="#2b3a55"/>
+    <rect x="12" y="122" width="120" height="8" rx="2" fill="#8a9bb0"/>
+    <rect x="12" y="140" width="130" height="8" rx="2" fill="#d8d2c8"/>
+    <rect x="12" y="158" width="115" height="8" rx="2" fill="#d8d2c8"/>
+    <!-- Active doc indicator -->
+    <rect x="0" y="100" width="3" height="32" fill="#b8956a"/>
+    <!-- Editor canvas -->
+    <rect x="200" y="44" width="400" height="456" fill="#ede9e1"/>
+    <rect x="230" y="84" width="340" height="396" fill="white" rx="0"/>
+    <rect x="260" y="120" width="220" height="16" rx="2" fill="#1a2332"/>
+    <rect x="260" y="148" width="280" height="6" rx="2" fill="#d8d2c8"/>
+    <rect x="260" y="162" width="260" height="6" rx="2" fill="#d8d2c8"/>
+    <rect x="260" y="176" width="275" height="6" rx="2" fill="#d8d2c8"/>
+    <rect x="260" y="200" width="270" height="6" rx="2" fill="#d8d2c8"/>
+    <rect x="260" y="214" width="255" height="6" rx="2" fill="#d8d2c8"/>
+    <!-- Persona panel -->
+    <rect x="600" y="44" width="200" height="456" fill="#f8f6f2" stroke="#d8d2c8" stroke-width="1"/>
+    <rect x="616" y="76" width="168" height="70" rx="8" fill="white" stroke="#d8d2c8" stroke-width="1"/>
+    <circle cx="646" cy="106" r="16" fill="#2b3a55"/>
+    <text x="640" y="112" font-family="serif" font-size="14" fill="white" font-style="italic">K</text>
+    <rect x="616" y="158" width="168" height="32" rx="4" fill="#7c5cbf"/>
+    <rect x="616" y="198" width="168" height="28" rx="4" fill="none" stroke="#7c5cbf" stroke-width="1.5"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="Toolbar.jsx"></script>
+<script type="text/babel" src="PersonaPanel.jsx"></script>
+<script type="text/babel" src="Editor.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  const [activeDoc, setActiveDoc] = useState(1);
+  const [isScreenplay, setIsScreenplay] = useState(false);
+  const [showNewDocModal, setShowNewDocModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  if (showWelcome) {
+    return (
+      <div style={{
+        width: "100%", height: "100%", background: "#1a2332",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 0,
+      }}>
+        {/* Logo area */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 48 }}>
+          <div style={{ fontFamily: "'Alfa Slab One', serif", fontSize: 60, letterSpacing: "0.04em", color: "#b8956a", lineHeight: 1 }}>
+            CO-WRITER
+          </div>
+          <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 12, fontWeight: 300, letterSpacing: "0.22em", color: "#4a607e", textTransform: "uppercase", marginTop: 6 }}>
+            Intelligent Narrative Partner
+          </div>
+        </div>
+
+        {/* Welcome card */}
+        <div style={{
+          background: "white", borderRadius: 12, padding: "40px 48px",
+          boxShadow: "0 16px 60px rgba(0,0,0,0.3)", textAlign: "center",
+          maxWidth: 440, width: "90%",
+        }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#1a2332", marginBottom: 10 }}>
+            Welcome back, Writer.
+          </div>
+          <div style={{ fontFamily: "'Lora', serif", fontSize: 14, lineHeight: 1.7, color: "#4a607e", marginBottom: 32, fontStyle: "italic" }}>
+            Your manuscripts, your personas, your voice — all in one place.
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              onClick={() => setShowWelcome(false)}
+              style={{
+                background: "#b8956a", color: "white", border: "none", borderRadius: 4,
+                padding: "12px 24px", cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600,
+                transition: "background 150ms ease",
+              }}
+              onMouseEnter={e => e.target.style.background = "#9a7a52"}
+              onMouseLeave={e => e.target.style.background = "#b8956a"}
+            >
+              Open my documents
+            </button>
+            <button
+              style={{
+                background: "transparent", color: "#7c5cbf", border: "1.5px solid #7c5cbf",
+                borderRadius: 4, padding: "11px 24px", cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600,
+              }}
+            >
+              ✦ Start with a persona
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 32, fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#2b3a55", letterSpacing: "0.05em" }}>
+          Co-Writer · UI Kit Prototype
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Top nav bar */}
+      <div style={{
+        height: 44, background: "#1a2332", display: "flex", alignItems: "center",
+        padding: "0 16px", gap: 12, flexShrink: 0, zIndex: 10,
+      }}>
+        <span style={{ fontFamily: "'Alfa Slab One', serif", fontSize: 18, letterSpacing: "0.03em", color: "#b8956a", marginRight: 8 }}>CO-WRITER</span>
+
+        {/* Nav items */}
+        {["File", "Edit", "Format", "View", "Help"].map(item => (
+          <button key={item} style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#8a9bb0",
+            padding: "4px 8px", borderRadius: 4, transition: "color 150ms ease",
+          }}
+          onMouseEnter={e => e.target.style.color = "white"}
+          onMouseLeave={e => e.target.style.color = "#8a9bb0"}
+          >{item}</button>
+        ))}
+
+        <div style={{ flex: 1 }} />
+
+        {/* Doc title */}
+        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#bcc8d8" }}>
+          {activeDoc === 1 ? "The Dark Tower" : activeDoc === 2 ? "Pulp Fiction — Scene 4" : activeDoc === 3 ? "Short Story Draft" : "Midnight Children"}
+        </span>
+
+        <div style={{ flex: 1 }} />
+
+        {/* User avatar */}
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#b8956a", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "white", fontSize: 12 }}>W</div>
+      </div>
+
+      {/* Main layout */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        <Sidebar
+          activeDoc={activeDoc}
+          onSelectDoc={(id) => { setActiveDoc(id); setIsScreenplay(id === 2); }}
+          onNewDoc={() => setShowNewDocModal(true)}
+        />
+
+        {/* Editor column */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <Toolbar
+            isScreenplay={isScreenplay}
+            onToggleScreenplay={() => setIsScreenplay(!isScreenplay)}
+          />
+          <Editor isScreenplay={isScreenplay} docId={activeDoc} />
+        </div>
+
+        <PersonaPanel />
+      </div>
+
+      {/* New document modal */}
+      {showNewDocModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(26,35,50,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200,
+        }} onClick={() => setShowNewDocModal(false)}>
+          <div style={{
+            background: "white", borderRadius: 12, padding: "32px",
+            boxShadow: "0 16px 60px rgba(26,35,50,0.25)", width: 420,
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#1a2332", marginBottom: 6 }}>New document</div>
+            <div style={{ fontFamily: "'Lora', serif", fontSize: 13, color: "#8a9bb0", fontStyle: "italic", marginBottom: 24 }}>Every great story begins with a blank page.</div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#4a607e", marginBottom: 4, letterSpacing: "0.06em", textTransform: "uppercase" }}>Title</label>
+                <input type="text" placeholder="Untitled manuscript…" style={{
+                  width: "100%", fontFamily: "'DM Sans', sans-serif", fontSize: 14, padding: "9px 12px",
+                  border: "1px solid #d8d2c8", borderRadius: 4, outline: "none", color: "#1a2332",
+                }} onFocus={e => e.target.style.borderColor = "#b8956a"} onBlur={e => e.target.style.borderColor = "#d8d2c8"} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#4a607e", marginBottom: 8, letterSpacing: "0.06em", textTransform: "uppercase" }}>Type</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {[
+                    { id: "prose", label: "Novel / Story", icon: "📖" },
+                    { id: "screenplay", label: "Screenplay", icon: "🎬" },
+                  ].map(t => (
+                    <div key={t.id} style={{ flex: 1, border: "1.5px solid #d8d2c8", borderRadius: 8, padding: "12px", cursor: "pointer", textAlign: "center",
+                      transition: "all 150ms ease" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "#b8956a"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "#d8d2c8"}>
+                      <div style={{ fontSize: 22, marginBottom: 4 }}>{t.icon}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 500, color: "#1a2332" }}>{t.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+              <button onClick={() => setShowNewDocModal(false)} style={{
+                flex: 1, background: "#b8956a", color: "white", border: "none", borderRadius: 4,
+                padding: "10px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14, fontWeight: 600,
+              }}>Create</button>
+              <button onClick={() => setShowNewDocModal(false)} style={{
+                flex: 1, background: "transparent", color: "#8a9bb0", border: "1px solid #d8d2c8",
+                borderRadius: 4, padding: "10px", cursor: "pointer",
+                fontFamily: "'DM Sans', sans-serif", fontSize: 14,
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>

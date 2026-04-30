@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper-mid); padding: 20px; font-family: var(--font-ui); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 10px; }
+  .persona-card {
+    width: 130px; background: white; border-radius: var(--radius-lg);
+    padding: 14px 12px; box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--paper-dark); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: box-shadow 200ms ease, transform 200ms ease;
+  }
+  .persona-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .persona-card.active { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,92,191,0.15); }
+  .persona-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+    font-style: italic; color: white;
+  }
+  .persona-name { font-family: 'Playfair Display', serif; font-size: 12px; font-weight: 700; color: var(--ink); text-align: center; line-height: 1.2; }
+  .persona-genre { font-size: 10px; color: var(--ink-light); text-align: center; }
+  .persona-badge { font-size: 9px; font-weight: 600; color: var(--violet); background: var(--violet-100); padding: 2px 7px; border-radius: var(--radius-pill); }
+</style>
+</head>
+<body>
+  <div class="label">Persona Cards</div>
+  <div class="row">
+    <div class="persona-card active">
+      <div class="persona-avatar" style="background: linear-gradient(135deg,#2b3a55,#1a2332)">K</div>
+      <div>
+        <div class="persona-name">Stephen King</div>
+        <div class="persona-genre">Horror · Thriller</div>
+      </div>
+      <span class="persona-badge">Active</span>
+    </div>
+    <div class="persona-card">
+      <div class="persona-avatar" style="background: linear-gradient(135deg,#9a7a52,#7a5c35)">T</div>
+      <div>
+        <div class="persona-name">Quentin Tarantino</div>
+        <div class="persona-genre">Screenplay · Pulp</div>
+      </div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-avatar" style="background: linear-gradient(135deg,#3d7a5a,#2a5c3f)">To</div>
+      <div>
+        <div class="persona-name">J.R.R. Tolkien</div>
+        <div class="persona-genre">Fantasy · Epic</div>
+      </div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-avatar" style="background: linear-gradient(135deg,#7c5cbf,#5e3fa3)">G</div>
+      <div>
+        <div class="persona-name">Neil Gaiman</div>
+        <div class="persona-genre">Fantasy · Myth</div>
+      </div>
+    </div>
+    <div class="persona-card" style="border-style:dashed; background:var(--paper)">
+      <div class="persona-avatar" style="background:var(--paper-dark); color:var(--ink-light); font-style:normal; font-size:24px">+</div>
+      <div>
+        <div class="persona-name" style="color:var(--ink-light)">New Persona</div>
+        <div class="persona-genre">Upload a book</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); padding: 20px; font-family: var(--font-ui); }
+  .section { margin-bottom: 16px; }
+  .label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 8px; }
+  .tokens { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-end; }
+  .space-block { background: var(--bronze); opacity: 0.7; border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 3px; }
+  .space-block span { font-size: 8px; color: white; white-space: nowrap; }
+  .radius-row { display: flex; gap: 10px; align-items: center; }
+  .radius-box { width: 44px; height: 44px; background: var(--ink-mid); display: flex; align-items: center; justify-content: center; }
+  .radius-label { font-size: 9px; color: var(--ink-light); text-align: center; margin-top: 4px; }
+  .radius-wrap { display: flex; flex-direction: column; align-items: center; }
+  .shadow-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .shadow-box { width: 54px; height: 36px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .shadow-label { font-size: 9px; color: var(--ink-light); text-align: center; margin-top: 4px; }
+  .shadow-wrap { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Spacing Scale (4px grid)</div>
+    <div class="tokens">
+      <div><div class="space-block" style="width:4px; height:16px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">4</div></div>
+      <div><div class="space-block" style="width:8px; height:20px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">8</div></div>
+      <div><div class="space-block" style="width:12px; height:24px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">12</div></div>
+      <div><div class="space-block" style="width:16px; height:28px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">16</div></div>
+      <div><div class="space-block" style="width:24px; height:32px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">24</div></div>
+      <div><div class="space-block" style="width:32px; height:36px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">32</div></div>
+      <div><div class="space-block" style="width:40px; height:40px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">40</div></div>
+      <div><div class="space-block" style="width:48px; height:44px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">48</div></div>
+      <div><div class="space-block" style="width:64px; height:48px;"></div><div style="font-size:8px;color:var(--ink-light);text-align:center;margin-top:2px">64</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Border Radius</div>
+    <div class="radius-row">
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:0px"></div><div class="radius-label">0<br>canvas</div></div>
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:4px"></div><div class="radius-label">4px<br>sm</div></div>
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:8px"></div><div class="radius-label">8px<br>md</div></div>
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:12px"></div><div class="radius-label">12px<br>lg</div></div>
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:20px"></div><div class="radius-label">20px<br>xl</div></div>
+      <div class="radius-wrap"><div class="radius-box" style="border-radius:999px; width:54px; height:28px;"></div><div class="radius-label">999px<br>pill</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Shadow System</div>
+    <div class="shadow-row">
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 1px 3px rgba(26,35,50,0.08)"></div><div class="shadow-label">xs<br>subtle</div></div>
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 2px 8px rgba(26,35,50,0.10)"></div><div class="shadow-label">sm<br>card</div></div>
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 4px 16px rgba(26,35,50,0.12)"></div><div class="shadow-label">md<br>panel</div></div>
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 4px 24px rgba(26,35,50,0.14)"></div><div class="shadow-label">lg<br>hover</div></div>
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 8px 40px rgba(26,35,50,0.16)"></div><div class="shadow-label">page<br>editor</div></div>
+      <div class="shadow-wrap"><div class="shadow-box" style="box-shadow:0 16px 60px rgba(26,35,50,0.22)"></div><div class="shadow-label">modal</div></div>
+    </div>
+  </div>
+</body>
+</html>

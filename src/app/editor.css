@@ -1,0 +1,193 @@
+/* ─── Estilos do Editor Tiptap ────────────────────────────────────────── */
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before,
+.tiptap h1.is-empty::before,
+.tiptap h2.is-empty::before,
+.tiptap h3.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #8a9bb0;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+
+/* Tipografia da prosa */
+.tiptap {
+  outline: none;
+  min-height: 100%;
+}
+
+.tiptap h1 {
+  font-family: var(--font-heading);
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1a2332;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+}
+
+.tiptap .screenplay-scene {
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  border-bottom: 2px solid #1a2332;
+  padding-bottom: 2px;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.tiptap .screenplay-character {
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.tiptap .screenplay-dialogue {
+  max-width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: #1a2332;
+  background: rgba(184, 149, 106, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.tiptap .screenplay-parenthetical {
+  max-width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.tiptap .screenplay-transition {
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: right;
+  margin-top: 2rem;
+}
+
+
+
+.tiptap h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #1a2332;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.tiptap h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1a2332;
+  margin-bottom: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.tiptap p {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #243347;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.tiptap strong {
+  font-weight: 700;
+  color: #1a2332;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap ul,
+.tiptap ol {
+  font-family: var(--font-serif);
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #243347;
+}
+
+.tiptap li {
+  line-height: 1.8;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap ul li {
+  list-style-type: disc;
+}
+
+.tiptap ol li {
+  list-style-type: decimal;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid #b8956a;
+  padding-left: 1.25rem;
+  margin-left: 0;
+  margin-right: 0;
+  color: #4a607e;
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+
+.tiptap hr {
+  border: none;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.tiptap hr::after {
+  content: "***";
+  color: #b8956a;
+  font-weight: bold;
+  letter-spacing: 1.5rem;
+  font-size: 1.2rem;
+  padding-left: 1.5rem; /* Ajuste para centralizar o espaçamento das letras */
+}
+
+.tiptap code {
+  background-color: #f5e4cc;
+  color: #7a5c35;
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.tiptap pre {
+  background: #0d1520;
+  color: #f8f6f2;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* Seleção */
+.tiptap ::selection {
+  background-color: rgba(184, 149, 106, 0.25);
+}
