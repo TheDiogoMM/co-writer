@@ -76,9 +76,8 @@ export const Screenplay = Extension.create({
       'Alt-5': () => this.editor.commands.setScreenplayType('parenthetical'),
       'Alt-6': () => this.editor.commands.setScreenplayType('transition'),
 
-      Enter: ({ editor }) => {
-        if (this.storage.disabled) return false
-        const { state } = editor
+      Enter: ({ state }) => {
+        if (this.storage.disabled || !state) return false
         const { selection } = state
         const { $from } = selection
         const node = $from.parent
@@ -91,9 +90,8 @@ export const Screenplay = Extension.create({
         return false
       },
 
-      Tab: ({ editor }) => {
-        if (this.storage.disabled) return false
-        const { state } = editor
+      Tab: ({ state }) => {
+        if (this.storage.disabled || !state) return false
         const { selection } = state
         const { $from } = selection
         const node = $from.parent

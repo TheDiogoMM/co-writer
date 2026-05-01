@@ -1,6 +1,12 @@
-import type { Metadata } from "next";
-import { DM_Sans, Lora, Playfair_Display, Alfa_Slab_One, Courier_Prime } from "next/font/google";
+import { DM_Sans, Lora, Playfair_Display, Alfa_Slab_One, Courier_Prime, Caveat } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+// ... (dentro dos carregamentos de fonte)
+const caveat = Caveat({
+  variable: "--font-handwriting",
+  subsets: ["latin"],
+});
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -42,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${dmSans.variable} ${lora.variable} ${playfair.variable} ${alfaSlab.variable} ${courier.variable} h-full antialiased bg-paper`}
+      className={`${dmSans.variable} ${lora.variable} ${playfair.variable} ${alfaSlab.variable} ${courier.variable} ${caveat.variable} h-full antialiased bg-paper`}
       suppressHydrationWarning={true}
     >
       <head>
@@ -50,17 +56,25 @@ export default function RootLayout({
         <meta name="theme-color" content="#1a2332" />
         <link rel="icon" href="/logocwicon.png" />
         <link rel="apple-touch-icon" href="/logocwicon.png" />
-        <script dangerouslySetInnerHTML={{ __html: `
-          if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              for(let registration of registrations) {
-                registration.unregister();
-              }
-            });
-          }
-        ` }} />
       </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning={true}>{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning={true}>
+        <Script
+          id="unregister-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+            if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  registration.unregister();
+                }
+              });
+            }
+          `,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

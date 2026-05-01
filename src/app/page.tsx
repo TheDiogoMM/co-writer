@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Editor } from "@tiptap/react";
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import { Screenplay } from "@/lib/Screenplay";
+
 import {
   PenTool,
   FileText,
@@ -20,9 +27,11 @@ import {
   List,
   LayoutGrid,
 } from "lucide-react";
-import RichEditor from "@/components/RichEditor";
+
+const RichEditor = dynamic(() => import("@/components/RichEditor"), { ssr: false });
 import EditorToolbar from "@/components/EditorToolbar";
 import { generateContent } from "@/app/actions/ai";
+import { extractPdfText } from "@/app/actions/pdf";
 import "./editor.css";
 
 type WelcomeView = "main" | "novoDocumento" | "documentosRecentes";
@@ -99,7 +108,40 @@ export default function CoWriterApp() {
   const [pageSettings, setPageSettings]         = useState<PageSettings>(DEFAULT_SETTINGS);
   const [customW, setCustomW]                   = useState(210);
   const [customH, setCustomH]                   = useState(297);
-  const [activeEditor, setActiveEditor]         = useState<Editor | null>(null);
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      Placeholder.configure({
+        placeholder: ({ node }) => node.type.name === "heading" ? "Título…" : "Comece a escrever…",
+      }),
+      Underline,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Screenplay,
+    ],
+    content: `<h1>${docTitle}</h1><p></p>`,
+    editorProps: {
+      attributes: {
+        class: "focus:outline-none min-h-full",
+        spellcheck: "true",
+        lang: "pt-BR",
+      },
+    },
+    onUpdate({ editor }) {
+      const firstNode = editor.state.doc.firstChild;
+      if (firstNode && firstNode.type.name === "heading") {
+        setDocTitle(firstNode.textContent.trim() || "Sem título");
+      }
+      const items: { id: string; text: string; level: number; pos: number }[] = [];
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "heading") {
+          items.push({ id: `h-${pos}`, text: node.textContent || "Título sem texto", level: node.attrs.level, pos });
+        }
+      });
+      setToc(items);
+    },
+  });
+
   const [isAiLoading, setIsAiLoading]           = useState(false);
   const [contextMode, setContextMode]           = useState<"selecao" | "capitulo" | "tudo">("selecao");
   const [lengthMode, setLengthMode]             = useState<"paragrafo" | "capitulo">("paragrafo");
@@ -107,133 +149,199 @@ export default function CoWriterApp() {
   const [personas, setPersonas]                 = useState<Persona[]>(INITIAL_PERSONAS);
   const [selectedPersona, setSelectedPersona]   = useState<Persona>(INITIAL_PERSONAS[0]);
   const [showNewPersonaModal, setShowNewPersonaModal] = useState(false);
+  const [newPersonaName, setNewPersonaName]   = useState("");
+  const [newPersonaRole, setNewPersonaRole]   = useState<"Escritor" | "Roteirista">("Escritor");
+  const [isUploading, setIsUploading]         = useState(false);
+  const [uploadedContent, setUploadedContent] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const openDocRef   = useRef<HTMLInputElement>(null);
   const [activeMenu, setActiveMenu]             = useState<string | null>(null);
   const [toc, setToc]                           = useState<{ id: string; text: string; level: number; pos: number }[]>([]);
   const [analysisResult, setAnalysisResult]     = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing]           = useState(false);
+  const [pendingSuggestion, setPendingSuggestion] = useState<{ text: string; mode: "escrever" | "melhorar" } | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [isResizing, setIsResizing]     = useState(false);
+  const [showPageNumbers, setShowPageNumbers]   = useState(true);
 
-  const updateTOC = useCallback((editor: Editor) => {
-    const items: { id: string; text: string; level: number; pos: number }[] = [];
-    editor.state.doc.descendants((node, pos) => {
-      if (node.type.name === "heading") {
-        items.push({
-          id: `h-${pos}`,
-          text: node.textContent || "Título sem texto",
-          level: node.attrs.level,
-          pos: pos,
-        });
-      }
-    });
-    setToc(items);
-  }, []);
+  const startResizing = useCallback(() => setIsResizing(true), []);
+  const stopResizing  = useCallback(() => setIsResizing(false), []);
+  const resize        = useCallback((e: MouseEvent) => {
+    if (isResizing) {
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth > 200 && newWidth < 600) setSidebarWidth(newWidth);
+    }
+  }, [isResizing]);
 
-  const handleEditorReady = useCallback((editor: Editor) => {
-    setActiveEditor(editor);
-    updateTOC(editor);
-    
-    editor.on("update", ({ editor }) => {
-      updateTOC(editor);
-    });
-  }, [updateTOC]);
+  useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   const getContextText = (editor: Editor, mode: "selecao" | "capitulo" | "tudo") => {
+    if (!editor || !editor.state) return "";
+    let text = "";
     if (mode === "selecao") {
       const { from, to } = editor.state.selection;
-      if (from === to) return editor.getText();
-      return editor.state.doc.textBetween(from, to, " ");
+      if (from !== to) text = editor.state.doc.textBetween(from, to, "\n");
+      else text = editor.getText();
+    } else {
+      text = editor.getText();
     }
-    return editor.getText();
+    return text.trim() || editor.getText().trim();
   };
 
   const handleCoWrite = async (action: "escrever" | "melhorar") => {
-    if (!activeEditor || isAiLoading) return;
+    if (!editor || isAiLoading) return;
     setIsAiLoading(true);
+    setPendingSuggestion(null);
 
     try {
-      const context = getContextText(activeEditor, contextMode);
-      const persona = selectedPersona.name;
-      const trainingData = selectedPersona.knowledge || "";
-
+      const context = getContextText(editor, contextMode);
+      console.log(`[AI] Enviando contexto. Tamanho: ${context.length}`);
       const prompt = action === "melhorar" 
         ? "Melhore o estilo deste texto seguindo sua persona." 
         : `Continue a história de forma fluida (aproximadamente um ${lengthMode}).`;
-
-      const result = await generateContent(prompt, persona, context, trainingData, "creative");
       
+      const result = await generateContent(prompt, selectedPersona.name, context, selectedPersona.knowledge || "", "creative");
       if (result.text) {
-        console.log("IA respondeu com sucesso:", result.text.substring(0, 50) + "...");
-        if (action === "melhorar") {
-          activeEditor.commands.insertContent(result.text);
-        } else {
-          activeEditor.commands.focus("end");
-          activeEditor.commands.insertContent("\n" + result.text);
-        }
-      } else if (result.error) {
-        console.error("Erro retornado pela IA:", result.error);
-        alert(`Erro na IA: ${result.error}`);
+        setPendingSuggestion({ text: result.text, mode: action === "escrever" ? "escrever" : "melhorar" });
       }
     } catch (e) {
-      console.error("Exceção no handleCoWrite:", e);
-      alert("Falha crítica ao conectar com o serviço de IA.");
+      console.error("Erro na co-escrita:", e);
     } finally {
       setIsAiLoading(false);
     }
   };
 
   const handleConvert = async (newMode: WritingMode) => {
-    if (!activeEditor || isAiLoading) return;
-    const content = activeEditor.getText().trim();
-    if (content.length < 5) return; // Não converter se estiver vazio
+    if (!editor || isAiLoading) return;
+    const content = editor.getText().trim();
+    if (content.length < 5) return;
 
     setIsAiLoading(true);
     try {
-      const context = getContextText(activeEditor, "tudo");
-      const persona = selectedPersona.name;
-      const trainingData = selectedPersona.knowledge || "";
-
-      const result = await generateContent(newMode, persona, context, trainingData, "convert");
-      
-      if (result.text) {
-        console.log("Conversão concluída com sucesso.");
-        activeEditor.commands.setContent(result.text);
-      } else if (result.error) {
-        alert(`Erro na conversão: ${result.error}`);
-      }
+      const context = getContextText(editor, "tudo");
+      const result = await generateContent(newMode, selectedPersona.name, context, selectedPersona.knowledge || "", "convert");
+      if (result.text) editor.commands.setContent(result.text);
     } catch (e) {
       console.error("Erro na conversão:", e);
-      alert("Erro ao tentar converter o formato do texto.");
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  const handleAnalyze = async (task: "entidades" | "coerencia" | "continuidade" | "ortografia") => {
-    if (!activeEditor || isAnalyzing) return;
+  const handleAnalyze = async (task: "entidades" | "coerencia" | "continuidade" | "ortografia" | "gramatica") => {
+    if (!editor || isAnalyzing) return;
     setIsAnalyzing(true);
     setAnalysisResult("Analisando...");
 
     try {
-      const context = getContextText(activeEditor, contextMode);
-      const persona = selectedPersona.name;
-      const trainingData = selectedPersona.knowledge || "";
-
-      let prompt = "";
-      if (task === "entidades") prompt = "Identifique todos os personagens, cenários e itens importantes citados no texto.";
-      if (task === "coerencia") prompt = "Analise a coerência narrativa deste trecho. Há contradições ou diálogos que soam artificiais?";
-      if (task === "continuidade") prompt = "Verifique a continuidade. Algum elemento físico ou temporal mudou sem explicação?";
-      if (task === "ortografia") prompt = "Realize uma revisão gramatical e estilística fina focada em prosa literária.";
-
-      const result = await generateContent(prompt, persona, context, trainingData, "analyze");
-      if (result.text) {
-        setAnalysisResult(result.text);
-      } else if (result.error) {
-        setAnalysisResult(`Erro: ${result.error}`);
-      }
+      const context = getContextText(editor, contextMode);
+      const result = await generateContent(task, selectedPersona.name, context, selectedPersona.knowledge || "", "analyze");
+      if (result.text) setAnalysisResult(result.text);
     } catch (e) {
-      setAnalysisResult("Erro ao conectar com o laboratório.");
+      console.error("Erro na análise:", e);
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const getRandomColor = () => {
+    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    
+    try {
+      if (file.type === "application/pdf") {
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await extractPdfText(formData);
+        if (result.text) {
+          setUploadedContent(result.text);
+          alert("PDF processado com sucesso!");
+        } else {
+          alert(result.error || "Erro ao processar PDF.");
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setUploadedContent(event.target?.result as string);
+          alert("Documento processado com sucesso!");
+        };
+        reader.readAsText(file);
+      }
+    } catch (err: any) {
+      console.error("Erro no upload:", err);
+      alert(`Erro ao ler o arquivo: ${err.message || err}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleOpenLocalFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (file.type === "application/pdf") {
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await extractPdfText(formData);
+        if (result.text && activeEditor) {
+          activeEditor.commands.setContent(result.text);
+          setDocTitle(file.name.replace(/\.[^/.]+$/, ""));
+          setShowWelcome(false);
+        } else {
+          alert(result.error || "Erro ao processar PDF.");
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          if (activeEditor) {
+            activeEditor.commands.setContent(content);
+          }
+          setDocTitle(file.name.replace(/\.[^/.]+$/, ""));
+          setShowWelcome(false);
+        };
+        reader.readAsText(file);
+      }
+    } catch (err) {
+      alert("Erro ao abrir arquivo.");
+    }
+  };
+
+  const createPersona = () => {
+    if (!newPersonaName.trim()) return alert("Dê um nome à persona.");
+    
+    const newPersona: Persona = {
+      id: Date.now().toString(),
+      name: newPersonaName,
+      role: newPersonaRole,
+      tags: ["Personalizada"],
+      avatarLetter: newPersonaName.charAt(0).toUpperCase(),
+      bio: `Persona criada a partir de documentos enviados pelo usuário.`,
+      knowledge: uploadedContent,
+    };
+
+    setPersonas([...personas, newPersona]);
+    setSelectedPersona(newPersona);
+    setShowNewPersonaModal(false);
+    
+    // Reset
+    setNewPersonaName("");
+    setUploadedContent("");
   };
 
   const sizeInfo = PAGE_SIZES[pageSettings.size];
@@ -241,6 +349,11 @@ export default function CoWriterApp() {
   const pageH = pageSettings.size === "Personalizado" ? customH : sizeInfo.height;
   const displayW = pageSettings.orientacao === "retrato" ? pageW : pageH;
   const displayH = pageSettings.orientacao === "retrato" ? pageH : pageW;
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
+  if (!isMounted) return null;
 
   // ─── Tela de Boas-Vindas ───────────────────────────────────────────
   if (showWelcome) {
@@ -292,13 +405,23 @@ export default function CoWriterApp() {
                   </div>
                 </button>
 
-                <button className="flex items-center gap-3 w-full px-5 py-4 rounded-xl bg-paper-mid hover:bg-paper-dark text-ink transition-colors text-left border border-paper-dark">
+                <button 
+                  onClick={() => openDocRef.current?.click()}
+                  className="flex items-center gap-3 w-full px-5 py-4 rounded-xl bg-paper-mid hover:bg-paper-dark text-ink transition-colors text-left border border-paper-dark"
+                >
                   <Upload size={20} className="shrink-0 text-forest" />
                   <div>
                     <div className="font-sans font-semibold text-sm">Abrir do computador</div>
-                    <div className="font-sans text-xs text-ink-500 mt-0.5">Importar DOCX, PDF ou Markdown</div>
+                    <div className="font-sans text-xs text-ink-500 mt-0.5">Importar TXT, MD ou JS</div>
                   </div>
                 </button>
+                <input 
+                  type="file" 
+                  ref={openDocRef} 
+                  onChange={handleOpenLocalFile} 
+                  className="hidden" 
+                  accept=".txt,.md,.pdf,.js,.ts"
+                />
 
                 <button
                   onClick={() => setWelcomeView("novoDocumento")}
@@ -472,7 +595,14 @@ export default function CoWriterApp() {
       </div>
 
       {/* ── Workspace ──────────────────────────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden">
+      <EditorToolbar
+        editor={editor}
+        writingMode={writingMode}
+        pageLabel={`${pageSettings.size} · ${pageSettings.orientacao === "retrato" ? "Retrato" : "Paisagem"}`}
+        onOpenPageSettings={() => setShowPageSettings(true)}
+      />
+
+      <div className="flex-1 flex overflow-hidden relative">
 
         {/* Sidebar: Desenvolvimento */}
         <aside className="w-[260px] bg-paper-mid border-r border-paper-dark flex flex-col shrink-0 hidden lg:flex">
@@ -539,34 +669,75 @@ export default function CoWriterApp() {
         {/* Editor */}
         <main className="flex-1 flex flex-col bg-paper-mid relative overflow-hidden">
 
-          {/* Toolbar conectada ao editor */}
-          <EditorToolbar
-            editor={activeEditor}
-            writingMode={writingMode}
-            pageLabel={`${pageSettings.size} · ${pageSettings.orientacao === "retrato" ? "Retrato" : "Paisagem"}`}
-            onOpenPageSettings={() => setShowPageSettings(true)}
-          />
-
           {/* Canvas Tiptap */}
-          <div className="flex-1 overflow-y-auto py-8 flex justify-center" style={{ backgroundColor: "#d1cdc5" }}>
+          <div className="flex-1 overflow-auto py-8 flex justify-center" style={{ backgroundColor: "#d1cdc5" }}>
             <RichEditor
+              editor={editor}
               pageWidthPx={mmToPx(displayW)}
               pageHeightPx={mmToPx(displayH)}
               paddingTop={mmToPx(pageSettings.margemSuperior)}
               paddingBottom={mmToPx(pageSettings.margemInferior)}
               paddingLeft={mmToPx(pageSettings.margemEsquerda)}
               paddingRight={mmToPx(pageSettings.margemDireita)}
-              initialTitle={docTitle}
-              writingMode={writingMode}
-              onTitleChange={setDocTitle}
-              onEditorReady={handleEditorReady}
+              showPageNumbers={showPageNumbers}
             />
           </div>
         </main>
 
         {/* Painel de Persona e Modos */}
-        <aside className="w-[300px] bg-paper border-l border-paper-dark flex flex-col shrink-0 hidden md:flex">
+        <aside 
+          className="relative bg-paper border-l border-paper-dark flex flex-col shrink-0 hidden md:flex"
+          style={{ width: `${sidebarWidth}px` }}
+        >
+          {/* Resize Handle */}
+          <div 
+            onMouseDown={startResizing}
+            className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-violet/30 transition-colors z-50"
+          />
+
           <div className="flex-1 p-4 overflow-y-auto space-y-6">
+            {/* Sugestão Pendente */}
+            {pendingSuggestion && (
+              <div className="relative bg-[#fcf5e5] p-5 rounded-sm shadow-xl border-l-4 border-violet animate-in zoom-in-95 overflow-hidden">
+                {/* Linhas de caderno */}
+                <div className="absolute inset-0 pointer-events-none" 
+                     style={{ 
+                       backgroundImage: "linear-gradient(#e5e5e5 1px, transparent 1px)", 
+                       backgroundSize: "100% 1.6rem",
+                       marginTop: "1.2rem"
+                     }} 
+                />
+                
+                <div className="relative z-10">
+                  <div className="text-[10px] font-bold text-violet uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-paper-dark pb-1">
+                    <Sparkles size={12} /> Sugestão da IA ({pendingSuggestion.mode})
+                  </div>
+                  <div className="font-handwriting text-lg text-ink-800 leading-[1.6rem] italic mb-6">
+                    {pendingSuggestion.text}
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        if (editor) {
+                          editor.chain().focus().insertContent(pendingSuggestion.text).run();
+                        }
+                        setPendingSuggestion(null);
+                      }}
+                      className="flex-1 bg-violet text-white text-[10px] font-bold py-2 rounded-lg hover:bg-violet-dark transition-all"
+                    >
+                      ACEITAR
+                    </button>
+                    <button 
+                      onClick={() => setPendingSuggestion(null)}
+                      className="flex-1 bg-white border border-paper-dark text-ink-400 text-[10px] font-bold py-2 rounded-lg hover:bg-paper-mid transition-all"
+                    >
+                      REJEITAR
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Seletor de Modo de Escrita */}
             <div>
               <div className="text-[10px] font-bold text-ink-500 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -719,18 +890,38 @@ export default function CoWriterApp() {
                   <span className="text-violet">Revisão</span>
                   Estilística
                 </button>
+                <button 
+                  onClick={() => handleAnalyze("gramatica")}
+                  disabled={isAnalyzing}
+                  className="px-2 py-3 text-[10px] font-bold bg-white border border-paper-dark rounded-xl hover:bg-paper-mid transition-all text-ink-700 flex flex-col items-center gap-1 shadow-sm active:scale-95 disabled:opacity-50 col-span-2"
+                >
+                  <span className="text-red-500">Gramática</span>
+                  Corretor Ortográfico IA
+                </button>
               </div>
 
               {analysisResult && (
-                <div className="bg-black text-green-400 p-4 rounded-xl text-xs font-mono leading-relaxed max-h-80 overflow-y-auto border border-green-900/30 shadow-2xl animate-in fade-in slide-in-from-bottom-2">
-                  <div className="flex justify-between items-center mb-3 border-b border-green-900/30 pb-2">
-                    <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5">
-                      {isAnalyzing ? <Loader2 size={10} className="animate-spin text-green-500" /> : <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
-                      Laboratório: {selectedPersona.name}
-                    </span>
-                    <button onClick={() => setAnalysisResult(null)} className="text-green-700 hover:text-green-400 transition-colors p-1 text-lg">✕</button>
+                <div className="relative bg-[#fcf5e5] p-6 rounded-sm shadow-xl border-l-4 border-violet animate-in fade-in slide-in-from-bottom-2 overflow-hidden">
+                  {/* Linhas de caderno */}
+                  <div className="absolute inset-0 pointer-events-none" 
+                       style={{ 
+                         backgroundImage: "linear-gradient(#e5e5e5 1px, transparent 1px)", 
+                         backgroundSize: "100% 1.8rem",
+                         marginTop: "1.2rem"
+                       }} 
+                  />
+                  
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-center mb-4 border-b border-paper-dark pb-2">
+                      <span className="text-[10px] font-bold text-violet-dark uppercase tracking-widest flex items-center gap-1.5">
+                        <PenTool size={12} /> Considerações do Escritor
+                      </span>
+                      <button onClick={() => setAnalysisResult(null)} className="text-ink-300 hover:text-ink transition-colors p-1">✕</button>
+                    </div>
+                    <div className="whitespace-pre-wrap font-handwriting text-lg text-ink-800 leading-[1.8rem] italic antialiased">
+                      {analysisResult}
+                    </div>
                   </div>
-                  <div className="whitespace-pre-wrap font-mono antialiased drop-shadow-sm">{analysisResult}</div>
                 </div>
               )}
             </div>
@@ -906,48 +1097,78 @@ export default function CoWriterApp() {
             
             <div className="p-6 space-y-6">
               {/* Upload area */}
-              <div className="border-2 border-dashed border-paper-dark rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-violet hover:bg-violet-50 transition-all cursor-pointer group">
-                <Upload size={32} className="text-ink-200 group-hover:text-violet mb-3" />
-                <div className="text-sm font-bold text-ink mb-1">Subir Documento de Referência</div>
-                <div className="text-xs text-ink-500">O Co-Writer analisará o estilo e o vocabulário do autor.</div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                className="hidden" 
+                accept=".txt,.md,.pdf,.js,.ts"
+              />
+              
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer group ${
+                  uploadedContent 
+                    ? "border-forest bg-forest/5" 
+                    : "border-paper-dark hover:border-violet hover:bg-violet-50"
+                }`}
+              >
+                {isUploading ? (
+                  <Loader2 size={32} className="animate-spin text-violet mb-3" />
+                ) : uploadedContent ? (
+                  <FileText size={32} className="text-forest mb-3" />
+                ) : (
+                  <Upload size={32} className="text-ink-200 group-hover:text-violet mb-3" />
+                )}
+                
+                <div className="text-sm font-bold text-ink mb-1">
+                  {uploadedContent ? "Documento Carregado" : "Subir Documento de Referência"}
+                </div>
+                <div className="text-xs text-ink-500">
+                  {uploadedContent 
+                    ? `${uploadedContent.length} caracteres de estilo absorvidos.` 
+                    : "O Co-Writer analisará o estilo e o vocabulário do autor (.txt, .md)"}
+                </div>
               </div>
 
               <div className="space-y-4">
                 <label className="block text-xs font-bold text-ink-500 uppercase tracking-widest">Nome do Autor / Persona</label>
                 <input 
                   type="text" 
+                  value={newPersonaName}
+                  onChange={(e) => setNewPersonaName(e.target.value)}
                   placeholder="Ex: Machado de Assis"
                   className="w-full border border-paper-dark rounded-lg px-4 py-3 text-sm focus:border-violet outline-none transition-all"
                 />
                 
-                <div className="bg-paper-mid p-3 rounded-lg">
-                  <div className="text-[10px] font-bold text-ink-400 uppercase mb-2">Agregar à Bagagem Existente?</div>
-                  <div className="flex flex-wrap gap-2">
-                    {personas.map(p => (
-                      <button key={p.id} className="px-2 py-1 bg-white border border-paper-dark rounded text-[10px] font-medium text-ink-600 hover:border-violet hover:text-violet transition-all">
-                        {p.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="flex gap-4 pt-2">
-                  <div className="flex-1 flex items-center gap-2 p-3 border border-paper-dark rounded-lg cursor-pointer hover:border-violet hover:bg-violet-50 transition-all">
-                    <PenTool size={16} className="text-violet" />
+                  <div 
+                    onClick={() => setNewPersonaRole("Escritor")}
+                    className={`flex-1 flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all ${
+                      newPersonaRole === "Escritor" ? "border-violet bg-violet/10" : "border-paper-dark hover:bg-paper-mid"
+                    }`}
+                  >
+                    <PenTool size={16} className={newPersonaRole === "Escritor" ? "text-violet" : "text-ink-400"} />
                     <div className="text-xs font-bold">Escritor</div>
                   </div>
-                  <div className="flex-1 flex items-center gap-2 p-3 border border-paper-dark rounded-lg cursor-pointer hover:border-forest hover:bg-forest-50 transition-all">
-                    <Clapperboard size={16} className="text-forest" />
+                  <div 
+                    onClick={() => setNewPersonaRole("Roteirista")}
+                    className={`flex-1 flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-all ${
+                      newPersonaRole === "Roteirista" ? "border-forest bg-forest/10" : "border-paper-dark hover:bg-paper-mid"
+                    }`}
+                  >
+                    <Clapperboard size={16} className={newPersonaRole === "Roteirista" ? "text-forest" : "text-ink-400"} />
                     <div className="text-xs font-bold">Roteirista</div>
                   </div>
                 </div>
               </div>
 
               <button 
-                onClick={() => setShowNewPersonaModal(false)}
-                className="w-full bg-violet text-white font-bold py-3 rounded-xl shadow-lg hover:bg-violet-dark transition-all transform active:scale-[0.98]"
+                onClick={createPersona}
+                disabled={!newPersonaName || isUploading}
+                className="w-full bg-violet text-white font-bold py-3 rounded-xl shadow-lg hover:bg-violet-dark transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
               >
-                Criar e Começar a Escrever
+                {isUploading ? "Processando..." : "Criar e Começar a Escrever"}
               </button>
             </div>
           </div>

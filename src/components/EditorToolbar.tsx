@@ -39,12 +39,15 @@ interface ToolBtn {
 }
 
 export default function EditorToolbar({ editor, pageLabel, writingMode, onOpenPageSettings }: ToolbarProps) {
-  if (!editor) return null;
+  if (!editor || !editor.state) return null;
 
   const btn = (props: ToolBtn) => (
     <button
       key={props.label}
-      onClick={props.action}
+      onClick={() => {
+        console.log(`[Toolbar] Clique: ${props.label}`);
+        props.action();
+      }}
       disabled={props.disabled}
       title={props.label}
       className={`p-1.5 rounded transition-colors ${
@@ -60,7 +63,7 @@ export default function EditorToolbar({ editor, pageLabel, writingMode, onOpenPa
   const Divider = () => <div className="w-px h-5 bg-paper-dark mx-1 shrink-0" />;
 
   return (
-    <div className="h-12 border-b border-paper-dark bg-paper flex items-center px-4 gap-1 shrink-0 overflow-x-auto">
+    <div className="h-14 border-b border-paper-dark bg-paper shadow-sm flex items-center px-6 gap-2 shrink-0 overflow-x-auto z-30">
 
       {/* Estilo de bloco */}
       <select

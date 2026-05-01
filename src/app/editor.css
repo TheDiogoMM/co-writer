@@ -103,11 +103,16 @@
 
 .tiptap p {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.8;
   color: #243347;
-  margin-bottom: 1rem;
-  margin-top: 0;
+  margin: 0;
+  text-indent: 2rem;
+  text-align: justify;
+}
+/* O primeiro parágrafo após um título geralmente não tem recuo em livros, mas vamos deixar opcional ou padrão */
+.tiptap h1 + p, .tiptap h2 + p, .tiptap h3 + p {
+  text-indent: 0;
 }
 
 .tiptap strong {
