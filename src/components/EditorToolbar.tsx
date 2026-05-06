@@ -167,6 +167,7 @@ export default function EditorToolbar({ editor, pageLabel, writingMode, onOpenPa
                   onChange={(e) => {
                     const v = e.target.value;
                     if (v === "capitulo") editor.chain().focus().toggleHeading({ level: 2 }).run();
+                    if (v === "paragrafo") editor.chain().focus().setParagraph().run();
                     if (v === "prologo") editor.chain().focus().toggleHeading({ level: 1 }).run();
                     if (v === "dialogo") (editor.commands as any).setScreenplayType("dialogue");
                     if (v === "cena") editor.chain().focus().setHorizontalRule().run();
@@ -175,6 +176,7 @@ export default function EditorToolbar({ editor, pageLabel, writingMode, onOpenPa
                   <option value="" disabled>Estrutura Livro</option>
                   <option value="prologo">Prólogo / Título</option>
                   <option value="capitulo">Novo Capítulo</option>
+                  <option value="paragrafo">Parágrafo Comum</option>
                   <option value="dialogo">Diálogo</option>
                   <option value="cena">Quebra de Cena (***)</option>
                 </select>

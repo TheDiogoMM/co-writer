@@ -226,7 +226,11 @@ export default function CoWriterApp() {
     setIsAiLoading(true);
     try {
       const context = getContextText(editor, "tudo");
-      const result = await generateContent(newMode, selectedPersona.name, context, selectedPersona.knowledge || "", "convert");
+      const prompt = newMode === "Roteiro Cinema" 
+        ? "Converta este texto para o formato de roteiro de cinema profissional (Padrão Master Scenes). Use: CABEÇALHOS em CAIXA ALTA (EXT. LUGAR - DIA), PERSONAGENS centralizados em CAIXA ALTA antes do diálogo, DIÁLOGOS centralizados, e AÇÕES com espaçamento simples. Mantenha a fidelidade à história."
+        : `Converta este texto para o formato de ${newMode}.`;
+
+      const result = await generateContent(prompt, selectedPersona.name, context, selectedPersona.knowledge || "", "convert");
       if (result.text) editor.commands.setContent(result.text);
     } catch (e) {
       console.error("Erro na conversão:", e);

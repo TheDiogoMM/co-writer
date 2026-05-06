@@ -11,6 +11,7 @@ interface RichEditorProps {
   paddingBottom: number;
   paddingLeft: number;
   paddingRight: number;
+  writingMode: string;
   showPageNumbers?: boolean;
 }
 
@@ -22,87 +23,67 @@ export default function RichEditor({
   paddingBottom,
   paddingLeft,
   paddingRight,
+  writingMode,
   showPageNumbers = true,
 }: RichEditorProps) {
-  const [numPages, setNumPages] = useState(1);
+  const isRoteiro = writingMode === "Roteiro Cinema";
+  
+  const pageContentHeight = pageHeightPx - paddingTop - paddingBottom;
+  const [pageCount, setPageCount] = useState(1);
+  
+  // Calcular capacidade aproximado
+  const avgLineHeight = 24;
+  const usableWidth = pageWidthPx - paddingLeft - paddingRight;
+  const avgCharWidth = 9;
+  const charsPerLine = Math.floor(usableWidth / avgCharWidth);
+  const linesPerPage = Math.floor(pageContentHeight / avgLineHeight);
+  const charsPerPage = charsPerLine * linesPerPage;
 
   useEffect(() => {
-    if (!editor || !editor.options.element) return;
+    if (!editor) return;
     
-    const obs = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const height = entry.contentRect.height + paddingTop + paddingBottom;
-        const pages = Math.max(1, Math.ceil(height / pageHeightPx));
-        setNumPages(pages);
-      }
-    });
-
-    obs.observe(editor.options.element);
-    return () => obs.disconnect();
-  }, [editor, pageHeightPx, paddingTop, paddingBottom]);
+    const check = () => {
+      const text = editor.getText();
+      const count = Math.max(1, Math.ceil(text.length / charsPerPage) + 1);
+      setPageCount(Math.min(count, 40));
+    };
+    
+    check();
+    editor.on('update', check);
+  }, [editor, charsPerPage]);
 
   if (!editor) {
-    return (
-      <div 
-        className="bg-white shadow-xl animate-pulse" 
-        style={{ width: pageWidthPx, height: pageHeightPx }} 
-      />
-    );
+    return <div className="bg-white shadow animate-pulse" style={{ width: pageWidthPx, height: pageHeightPx }} />;
   }
 
   return (
-    <div className="relative flex flex-col items-center">
-      {/* Camada de Páginas (Background) */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-        {Array.from({ length: numPages }).map((_, i) => (
+    <div className={`relative ${isRoteiro ? 'writing-mode-roteiro' : ''}`}>
+      {/* Páginas A4 */}
+      {Array.from({ length: pageCount }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white shadow-lg border border-gray-300 absolute"
+          style={{ width: pageWidthPx, height: pageHeightPx, top: i * pageContentHeight }}
+        >
+          {/* Margens */}
           <div 
-            key={i}
-            className="bg-white shadow-[0_10px_50px_rgba(0,0,0,0.1)] border border-paper-dark"
-            style={{
-              width: `${pageWidthPx}px`,
-              height: `${pageHeightPx}px`,
-              marginBottom: "20px",
-              position: "relative",
-            }}
-          >
-            {showPageNumbers && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-sans font-bold text-ink-300">
-                — {i + 1} —
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Camada do Editor */}
-      <div
-        className="text-ink cursor-text z-10 transition-all duration-300 ease-in-out"
-        style={{
-          width: `${pageWidthPx}px`,
-          paddingTop: `${paddingTop}px`,
-          paddingBottom: `${paddingBottom + 100}px`,
-          paddingLeft: `${paddingLeft}px`,
-          paddingRight: `${paddingRight}px`,
-          minHeight: `${pageHeightPx}px`,
-        }}
-      >
+            className="absolute border border-dashed border-amber-300"
+            style={{ top: paddingTop, bottom: paddingBottom, left: paddingLeft, right: paddingRight }}
+          />
+          
+          {/* Número */}
+          {showPageNumbers && (
+            <div className="absolute text-gray-500" style={{ bottom: paddingBottom / 2, left: '50%', transform: 'translateX(-50%)' }}>
+              — {i + 1} —
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {/* Editor */}
+      <div className="absolute" style={{ padding: paddingTop, paddingLeft, paddingRight, paddingBottom: pageContentHeight, width: pageWidthPx }}>
         <EditorContent editor={editor} />
       </div>
-
-      {/* Numeração Lateral */}
-      {showPageNumbers && (
-        <div className="absolute left-[calc(100%+20px)] top-0 h-full pointer-events-none hidden lg:block">
-          {Array.from({ length: numPages }).map((_, i) => (
-            <div 
-              key={i} 
-              className="text-ink-200 font-sans text-[9px] font-bold uppercase tracking-widest"
-              style={{ position: "absolute", top: `${(i * (pageHeightPx + 20)) + 40}px` }}
-            >
-              Página {i + 1}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

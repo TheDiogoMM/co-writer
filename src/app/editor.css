@@ -17,6 +17,7 @@
 .tiptap {
   outline: none;
   min-height: 100%;
+  padding-bottom: 50px;
 }
 
 .tiptap h1 {
@@ -29,55 +30,86 @@
   margin-top: 0;
 }
 
+/* ─── MODO ROTEIRO CINEMA - Padrão Master Scenes ───────────────────────────────── */
+
+.writing-mode-roteiro .tiptap {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-size: 12pt !important;
+  line-height: 1 !important;
+  text-align: left !important;
+}
+
+.writing-mode-roteiro .tiptap p,
+.writing-mode-roteiro .tiptap h1,
+.writing-mode-roteiro .tiptap h2,
+.writing-mode-roteiro .tiptap h3,
+.writing-mode-roteiro .tiptap h4 {
+  text-indent: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Slugline (Cabeçalho de Cena) - MAIÚSCULAS, margem superior */
+.tiptap h4.screenplay-scene,
 .tiptap .screenplay-scene {
   text-transform: uppercase;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1rem;
-  border-bottom: 2px solid #1a2332;
-  padding-bottom: 2px;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  font-weight: normal;
+  font-size: 12pt !important;
+  margin-top: 24px !important;  /* 2 linhas */
+  margin-bottom: 24px !important;
 }
 
+/* Ação - Presente, focado no visível/audível */
+.tiptap .screenplay-action {
+  margin-bottom: 12px !important;  /* 1 linha */
+}
+.writing-mode-roteiro .tiptap p[data-type="action"] {
+  margin-bottom: 12px !important;
+}
+
+/* Personagem - MAIÚSCULAS, centralizado */
 .tiptap .screenplay-character {
   text-transform: uppercase;
-  font-weight: 700;
-  margin-top: 1.5rem;
-  margin-bottom: 0;
-  text-align: center;
+  text-align: center !important;
+  width: 200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-top: 18px !important;  /* 1.5 linhas */
+  margin-bottom: 0 !important;
+  font-size: 12pt !important;
 }
 
+/* Diálogo - Centralizado, margens estreitas */
 .tiptap .screenplay-dialogue {
-  max-width: 60%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 1rem;
-  text-align: center;
-  font-family: var(--font-serif);
-  font-style: italic;
-  color: #1a2332;
-  background: rgba(184, 149, 106, 0.05);
-  padding: 0.5rem;
-  border-radius: 4px;
+  text-align: center !important;
+  width: 320px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-bottom: 12px !important;
+  font-size: 12pt !important;
 }
 
+/* Parentético - Com parênteses corretos */
 .tiptap .screenplay-parenthetical {
-  max-width: 50%;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 0.9rem;
-  font-style: italic;
-  text-align: center;
-  margin-bottom: 0;
+  text-align: center !important;
+  width: 220px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-bottom: 0 !important;
+  font-size: 12pt !important;
 }
+.tiptap .screenplay-parenthetical::before { content: "("; }
+.tiptap .screenplay-parenthetical::after { content: ")"; }
 
+/* Transição - Direita, MAIÚSCULAS */
 .tiptap .screenplay-transition {
   text-transform: uppercase;
-  font-weight: 700;
-  text-align: right;
-  margin-top: 2rem;
+  text-align: right !important;
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
 }
+
+/* ─── FIM MODO ROTEIRO ───────────────────────────────────────────────────── */
 
 
 
@@ -110,7 +142,9 @@
   text-indent: 2rem;
   text-align: justify;
 }
-/* O primeiro parágrafo após um título geralmente não tem recuo em livros, mas vamos deixar opcional ou padrão */
+
+/* Remover recuo em elementos de roteiro e cabeçalhos */
+.tiptap p[data-type], 
 .tiptap h1 + p, .tiptap h2 + p, .tiptap h3 + p {
   text-indent: 0;
 }

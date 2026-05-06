@@ -32,35 +32,35 @@ export const Screenplay = Extension.create({
               .setNode('heading', { level: 4 })
               .updateAttributes('heading', { class: 'screenplay-scene', 'data-type': 'scene' })
               .run()
+          case 'action':
+            return chain()
+              .setParagraph()
+              .updateAttributes('paragraph', { class: 'screenplay-action', 'data-type': 'action' })
+              .run()
           case 'character':
             return chain()
               .setParagraph()
               .updateAttributes('paragraph', { class: 'screenplay-character', 'data-type': 'character' })
-              .setTextAlign('center')
               .run()
           case 'dialogue':
             return chain()
               .setParagraph()
               .updateAttributes('paragraph', { class: 'screenplay-dialogue', 'data-type': 'dialogue' })
-              .setTextAlign('center')
               .run()
           case 'parenthetical':
             return chain()
               .setParagraph()
               .updateAttributes('paragraph', { class: 'screenplay-parenthetical', 'data-type': 'parenthetical' })
-              .setTextAlign('center')
               .run()
           case 'transition':
             return chain()
               .setParagraph()
               .updateAttributes('paragraph', { class: 'screenplay-transition', 'data-type': 'transition' })
-              .setTextAlign('right')
               .run()
           default:
             return chain()
               .setParagraph()
               .updateAttributes('paragraph', { class: null, 'data-type': null })
-              .setTextAlign('left')
               .run()
         }
       },
@@ -76,34 +76,38 @@ export const Screenplay = Extension.create({
       'Alt-5': () => this.editor.commands.setScreenplayType('parenthetical'),
       'Alt-6': () => this.editor.commands.setScreenplayType('transition'),
 
-      Enter: ({ state }) => {
-        if (this.storage.disabled || !state) return false
-        const { selection } = state
+      Enter: () => {
+        if (this.storage.disabled) return false
+        const { selection } = this.editor.state
         const { $from } = selection
         const node = $from.parent
         const type = node.attrs['data-type']
 
         if (type === 'character') {
-          editor.commands.setScreenplayType('dialogue')
+          this.editor.commands.setScreenplayType('dialogue')
+          return true
+        }
+        if (type === 'dialogue') {
+          this.editor.commands.setScreenplayType('action')
           return true
         }
         return false
       },
 
-      Tab: ({ state }) => {
-        if (this.storage.disabled || !state) return false
-        const { selection } = state
+      Tab: () => {
+        if (this.storage.disabled) return false
+        const { selection } = this.editor.state
         const { $from } = selection
         const node = $from.parent
         const type = node.attrs['data-type']
 
-        if (!type || type === 'action') return editor.commands.setScreenplayType('character')
-        if (type === 'character') return editor.commands.setScreenplayType('parenthetical')
-        if (type === 'parenthetical') return editor.commands.setScreenplayType('dialogue')
-        if (type === 'dialogue') return editor.commands.setScreenplayType('transition')
-        if (type === 'transition') return editor.commands.setScreenplayType('scene')
+        if (!type || type === 'action' || type === 'scene') return this.editor.commands.setScreenplayType('character')
+        if (type === 'character') return this.editor.commands.setScreenplayType('parenthetical')
+        if (type === 'parenthetical') return this.editor.commands.setScreenplayType('dialogue')
+        if (type === 'dialogue') return this.editor.commands.setScreenplayType('transition')
+        if (type === 'transition') return this.editor.commands.setScreenplayType('scene')
         
-        return editor.commands.setScreenplayType('action')
+        return this.editor.commands.setScreenplayType('action')
       },
     }
   },
