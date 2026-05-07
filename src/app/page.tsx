@@ -302,8 +302,8 @@ export default function CoWriterApp() {
         const formData = new FormData();
         formData.append("file", file);
         const result = await extractPdfText(formData);
-        if (result.text && activeEditor) {
-          activeEditor.commands.setContent(result.text);
+        if (result.text && editor) {
+          editor.commands.setContent(result.text);
           setDocTitle(file.name.replace(/\.[^/.]+$/, ""));
           setShowWelcome(false);
         } else {
@@ -313,8 +313,8 @@ export default function CoWriterApp() {
         const reader = new FileReader();
         reader.onload = (event) => {
           const content = event.target?.result as string;
-          if (activeEditor) {
-            activeEditor.commands.setContent(content);
+          if (editor) {
+            editor.commands.setContent(content);
           }
           setDocTitle(file.name.replace(/\.[^/.]+$/, ""));
           setShowWelcome(false);
