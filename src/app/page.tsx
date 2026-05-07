@@ -634,8 +634,8 @@ export default function CoWriterApp() {
                     <button
                       key={item.id}
                       onClick={() => {
-                        if (activeEditor) {
-                          activeEditor.commands.focus(item.pos + 1);
+                        if (editor) {
+                          editor.commands.focus(item.pos + 1);
                           // Scroll suave é lidado pelo browser na maioria dos casos com focus
                         }
                       }}
