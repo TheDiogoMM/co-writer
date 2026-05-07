@@ -683,6 +683,7 @@ export default function CoWriterApp() {
               paddingBottom={mmToPx(pageSettings.margemInferior)}
               paddingLeft={mmToPx(pageSettings.margemEsquerda)}
               paddingRight={mmToPx(pageSettings.margemDireita)}
+              writingMode={writingMode}
               showPageNumbers={showPageNumbers}
             />
           </div>

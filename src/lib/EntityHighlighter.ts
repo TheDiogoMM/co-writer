@@ -1,6 +1,8 @@
 import { Extension } from '@tiptap/core'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
+import { Plugin } from '@tiptap/pm/state'
+
 export interface Entity {
   name: string
   color: string
@@ -48,7 +50,7 @@ export const EntityHighlighter = Extension.create({
 
   addProseMirrorPlugins() {
     return [
-      {
+      new Plugin({
         props: {
           decorations: (state) => {
             if (!state || !state.doc) return DecorationSet.empty;
@@ -82,7 +84,7 @@ export const EntityHighlighter = Extension.create({
             return DecorationSet.create(state.doc, decorations);
           },
         },
-      },
+      }),
     ]
   },
 })
