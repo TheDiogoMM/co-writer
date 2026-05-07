@@ -1,7 +1,7 @@
 "use client";
 
 import { EditorContent, Editor } from "@tiptap/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 interface RichEditorProps {
   editor: Editor | null;
@@ -27,61 +27,127 @@ export default function RichEditor({
   showPageNumbers = true,
 }: RichEditorProps) {
   const isRoteiro = writingMode === "Roteiro Cinema";
-  
-  const pageContentHeight = pageHeightPx - paddingTop - paddingBottom;
+  const contentAreaHeight = pageHeightPx - paddingTop - paddingBottom;
   const [pageCount, setPageCount] = useState(1);
-  
-  // Calcular capacidade aproximado
-  const avgLineHeight = 24;
-  const usableWidth = pageWidthPx - paddingLeft - paddingRight;
-  const avgCharWidth = 9;
-  const charsPerLine = Math.floor(usableWidth / avgCharWidth);
-  const linesPerPage = Math.floor(pageContentHeight / avgLineHeight);
-  const charsPerPage = charsPerLine * linesPerPage;
+  const measureRef = useRef<HTMLDivElement>(null);
+
+  // Measure actual content height and calculate pages
+  const recalcPages = useCallback(() => {
+    if (!measureRef.current) return;
+    const editorEl = measureRef.current.querySelector(".tiptap");
+    if (!editorEl) return;
+    const contentHeight = editorEl.scrollHeight;
+    const pages = Math.max(1, Math.ceil(contentHeight / contentAreaHeight));
+    setPageCount(pages);
+  }, [contentAreaHeight]);
 
   useEffect(() => {
     if (!editor) return;
+    // Initial measure after mount
+    const timer = setTimeout(recalcPages, 100);
+    editor.on("update", recalcPages);
+    editor.on("selectionUpdate", recalcPages);
     
-    const check = () => {
-      const text = editor.getText();
-      const count = Math.max(1, Math.ceil(text.length / charsPerPage) + 1);
-      setPageCount(Math.min(count, 40));
+    // Also observe resizes
+    const ro = new ResizeObserver(recalcPages);
+    if (measureRef.current) {
+      const tiptap = measureRef.current.querySelector(".tiptap");
+      if (tiptap) ro.observe(tiptap);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      editor.off("update", recalcPages);
+      editor.off("selectionUpdate", recalcPages);
+      ro.disconnect();
     };
-    
-    check();
-    editor.on('update', check);
-  }, [editor, charsPerPage]);
+  }, [editor, recalcPages]);
 
   if (!editor) {
-    return <div className="bg-white shadow animate-pulse" style={{ width: pageWidthPx, height: pageHeightPx }} />;
+    return (
+      <div
+        className="bg-white shadow-lg animate-pulse rounded"
+        style={{ width: pageWidthPx, height: pageHeightPx }}
+      />
+    );
   }
 
+  const totalHeight = pageCount * pageHeightPx;
+
   return (
-    <div className={`relative ${isRoteiro ? 'writing-mode-roteiro' : ''}`}>
-      {/* Páginas A4 */}
+    <div
+      className={`relative ${isRoteiro ? "writing-mode-roteiro" : ""}`}
+      style={{ width: pageWidthPx, minHeight: totalHeight }}
+    >
+      {/* Page backgrounds */}
       {Array.from({ length: pageCount }).map((_, i) => (
         <div
-          key={i}
-          className="bg-white shadow-lg border border-gray-300 absolute"
-          style={{ width: pageWidthPx, height: pageHeightPx, top: i * pageContentHeight }}
+          key={`page-${i}`}
+          className="absolute left-0 bg-white shadow-lg"
+          style={{
+            width: pageWidthPx,
+            height: pageHeightPx,
+            top: i * pageHeightPx,
+            borderLeft: "1px solid #d4d4d4",
+            borderRight: "1px solid #d4d4d4",
+            borderBottom: "1px solid #c8c8c8",
+          }}
         >
-          {/* Margens */}
-          <div 
-            className="absolute border border-dashed border-amber-300"
-            style={{ top: paddingTop, bottom: paddingBottom, left: paddingLeft, right: paddingRight }}
-          />
-          
-          {/* Número */}
+          {/* Page number */}
           {showPageNumbers && (
-            <div className="absolute text-gray-500" style={{ bottom: paddingBottom / 2, left: '50%', transform: 'translateX(-50%)' }}>
-              — {i + 1} —
+            <div
+              className="absolute text-xs font-mono select-none"
+              style={{
+                top: paddingTop / 2 - 6,
+                right: paddingRight,
+                color: "#999",
+              }}
+            >
+              {i + 1}
             </div>
           )}
+
+          {/* Footer line (margin indicator) */}
+          <div
+            className="absolute left-0 right-0"
+            style={{
+              bottom: paddingBottom,
+              marginLeft: paddingLeft,
+              marginRight: paddingRight,
+              borderBottom: "1px dashed rgba(184,149,106,0.2)",
+            }}
+          />
         </div>
       ))}
-      
-      {/* Editor */}
-      <div className="absolute" style={{ padding: paddingTop, paddingLeft, paddingRight, paddingBottom: pageContentHeight, width: pageWidthPx }}>
+
+      {/* Page separators (visual gap between pages) */}
+      {Array.from({ length: Math.max(0, pageCount - 1) }).map((_, i) => (
+        <div
+          key={`sep-${i}`}
+          className="absolute left-0 pointer-events-none"
+          style={{
+            width: pageWidthPx,
+            top: (i + 1) * pageHeightPx - 1,
+            height: 2,
+            background: "linear-gradient(to right, transparent 10%, #b8956a44 50%, transparent 90%)",
+            zIndex: 5,
+          }}
+        />
+      ))}
+
+      {/* Editor content — sits inside the pages with proper padding */}
+      <div
+        ref={measureRef}
+        className="absolute top-0 left-0"
+        style={{
+          width: pageWidthPx,
+          paddingTop,
+          paddingLeft,
+          paddingRight,
+          paddingBottom: paddingBottom + (pageCount - 1) * (paddingTop + paddingBottom),
+          minHeight: totalHeight,
+        }}
+      >
         <EditorContent editor={editor} />
       </div>
     </div>
