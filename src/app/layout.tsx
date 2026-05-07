@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { DM_Sans, Lora, Playfair_Display, Alfa_Slab_One, Courier_Prime, Caveat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
