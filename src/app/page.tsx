@@ -218,6 +218,59 @@ export default function CoWriterApp() {
     }
   };
 
+  // Post-process AI output into proper screenplay HTML structure
+  const formatAsScreenplay = (rawText: string): string => {
+    const lines = rawText.split(/\n/);
+    const htmlParts: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].replace(/\*\*/g, '').trim(); // remove markdown bold
+      if (!line) continue;
+
+      // Scene heading: starts with INT. or EXT.
+      if (/^(INT\.|EXT\.|INT\/EXT\.)/.test(line.toUpperCase())) {
+        htmlParts.push(`<h4 class="screenplay-scene" data-type="scene">${line.toUpperCase()}</h4>`);
+        continue;
+      }
+
+      // Transition: ends with TO: or is FADE IN/OUT
+      if (/^(FADE (IN|OUT)|CUT TO|DISSOLVE TO|SMASH CUT|MATCH CUT|JUMP CUT)/.test(line.toUpperCase()) ||
+          /TO:$/i.test(line)) {
+        htmlParts.push(`<p class="screenplay-transition" data-type="transition">${line.toUpperCase()}</p>`);
+        continue;
+      }
+
+      // Parenthetical: wrapped in parentheses
+      if (/^\(.*\)$/.test(line)) {
+        htmlParts.push(`<p class="screenplay-parenthetical" data-type="parenthetical">${line.replace(/^\(|\)$/g, '')}</p>`);
+        continue;
+      }
+
+      // Character name: ALL CAPS, short, followed by dialogue/parenthetical
+      const nextLine = i + 1 < lines.length ? lines[i + 1]?.replace(/\*\*/g, '').trim() : '';
+      const isAllCaps = line === line.toUpperCase() && /^[A-ZÁÉÍÓÚÃÕÂÊÔÇ\s.'-]+$/.test(line);
+      const isShort = line.length < 40;
+      const nextIsDialogueOrParen = nextLine && !(/^(INT\.|EXT\.)/.test(nextLine.toUpperCase())) && nextLine.length > 0;
+
+      if (isAllCaps && isShort && nextIsDialogueOrParen && !(/^(INT\.|EXT\.)/.test(line))) {
+        htmlParts.push(`<p class="screenplay-character" data-type="character">${line}</p>`);
+        continue;
+      }
+
+      // Check if previous was a character or parenthetical → this is dialogue
+      const prevHtml = htmlParts[htmlParts.length - 1] || '';
+      if (prevHtml.includes('data-type="character"') || prevHtml.includes('data-type="parenthetical"')) {
+        htmlParts.push(`<p class="screenplay-dialogue" data-type="dialogue">${line}</p>`);
+        continue;
+      }
+
+      // Default: action
+      htmlParts.push(`<p class="screenplay-action" data-type="action">${line}</p>`);
+    }
+
+    return htmlParts.join('');
+  };
+
   const handleConvert = async (newMode: WritingMode) => {
     if (!editor || isAiLoading) return;
     const content = editor.getText().trim();
@@ -227,11 +280,29 @@ export default function CoWriterApp() {
     try {
       const context = getContextText(editor, "tudo");
       const prompt = newMode === "Roteiro Cinema" 
-        ? "Converta este texto para o formato de roteiro de cinema profissional (Padrão Master Scenes). Use: CABEÇALHOS em CAIXA ALTA (EXT. LUGAR - DIA), PERSONAGENS centralizados em CAIXA ALTA antes do diálogo, DIÁLOGOS centralizados, e AÇÕES com espaçamento simples. Mantenha a fidelidade à história."
+        ? `Converta este texto para o formato de roteiro de cinema profissional (Padrão Master Scenes).
+Regras OBRIGATÓRIAS de formatação:
+- Cada elemento deve estar em sua PRÓPRIA LINHA (separado por quebra de linha).
+- CABEÇALHOS DE CENA: Sempre começam com INT. ou EXT. seguido do local e período. Tudo em CAIXA ALTA. Ex: INT. QUARTO DO HOTEL - NOITE
+- NOMES DE PERSONAGEM: Sozinhos numa linha, em CAIXA ALTA. Ex: WINSTON
+- DIÁLOGOS: Na linha seguinte ao nome do personagem. Texto normal.
+- PARENTÉTICOS: Entre parênteses, numa linha própria entre o nome e o diálogo. Ex: (sussurrando)
+- AÇÕES: Descrições em texto normal, numa linha própria.
+- TRANSIÇÕES: Em CAIXA ALTA, numa linha própria. Ex: CUT TO:
+- NÃO use marcadores markdown como ** ou #.
+- Mantenha fidelidade total à história original.`
         : `Converta este texto para o formato de ${newMode}.`;
 
       const result = await generateContent(prompt, selectedPersona.name, context, selectedPersona.knowledge || "", "convert");
-      if (result.text) editor.commands.setContent(result.text);
+      if (result.text) {
+        if (newMode === "Roteiro Cinema") {
+          // Post-process into proper screenplay HTML
+          const formattedHtml = formatAsScreenplay(result.text);
+          editor.commands.setContent(formattedHtml);
+        } else {
+          editor.commands.setContent(result.text);
+        }
+      }
     } catch (e) {
       console.error("Erro na conversão:", e);
     } finally {
@@ -374,17 +445,17 @@ export default function CoWriterApp() {
         <div className="absolute inset-0 bg-ink/65" />
 
         {/* Painel central */}
-        <div className="relative z-10 flex flex-col items-center gap-6 w-full max-w-md">
+        <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-md max-h-[95vh] overflow-auto">
 
           {/* Box 1: Logo */}
-          <div className="w-full bg-paper-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+          <div className="w-full bg-paper-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden shrink-0">
             <Image
               src="/logocw.jpeg"
               alt="Co-Writer"
               width={0}
               height={0}
               sizes="100vw"
-              className="w-full h-auto block"
+              className="w-full h-auto block max-h-[35vh] object-contain"
               priority
             />
           </div>

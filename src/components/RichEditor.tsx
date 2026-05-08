@@ -15,7 +15,7 @@ interface RichEditorProps {
   showPageNumbers?: boolean;
 }
 
-const PAGE_GAP = 24; // gap between pages in pixels
+const PAGE_GAP = 32; // visible gap between page cards
 
 export default function RichEditor({
   editor,
@@ -29,78 +29,96 @@ export default function RichEditor({
   showPageNumbers = true,
 }: RichEditorProps) {
   const isRoteiro = writingMode === "Roteiro Cinema";
-
-  // The printable area height inside a single page
   const contentAreaHeight = pageHeightPx - paddingTop - paddingBottom;
+  // "stride" = distance from start of one page's content to start of next page's content
+  const stride = contentAreaHeight + paddingBottom + PAGE_GAP + paddingTop;
 
   const [pageCount, setPageCount] = useState(1);
   const editorWrapperRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
   // ── Page break engine ──────────────────────────────────────────────
-  // Walk every top-level block in the rendered editor DOM.
-  // If a block's bottom edge would exceed the current page's content
-  // area, inject a margin-top on that block to push it to the next
-  // page's content area.
+  // Walks every top-level block in the Tiptap DOM.
+  // If a block's bottom edge would exceed the current page's printable
+  // area, injects margin-top to push it to the next page's content area.
   const applyPageBreaks = useCallback(() => {
-    if (!editorWrapperRef.current) return;
-    const tiptapEl = editorWrapperRef.current.querySelector(".tiptap") as HTMLElement | null;
+    const wrapper = editorWrapperRef.current;
+    if (!wrapper) return;
+    const tiptapEl = wrapper.querySelector(".tiptap") as HTMLElement | null;
     if (!tiptapEl) return;
-
     const blocks = tiptapEl.children;
     if (!blocks.length) { setPageCount(1); return; }
 
-    // Reset all previously injected spacing
+    // 1. Reset all previously injected page-break spacing
     for (let i = 0; i < blocks.length; i++) {
-      (blocks[i] as HTMLElement).style.marginTop = "";
+      const el = blocks[i] as HTMLElement;
+      if (el.dataset.pageBreakMargin) {
+        el.style.marginTop = "";
+        delete el.dataset.pageBreakMargin;
+      }
     }
 
-    // Force a reflow so measurements are fresh
+    // 2. Force reflow
     void tiptapEl.offsetHeight;
 
-    // The top of the editor content in viewport coords
-    const editorTop = tiptapEl.getBoundingClientRect().top;
+    // 3. Get the top of the content area (the .tiptap element)
+    const contentTop = tiptapEl.getBoundingClientRect().top;
 
+    // 4. Walk blocks and inject breaks
+    // Track how much extra space we've injected so far
+    let injectedSpace = 0;
     let currentPage = 1;
 
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i] as HTMLElement;
-      const blockRect = block.getBoundingClientRect();
+      const rect = block.getBoundingClientRect();
 
-      // Block's position relative to the editor content start
-      const blockTop = blockRect.top - editorTop;
-      const blockBottom = blockRect.bottom - editorTop;
+      // Block position relative to content start, minus injected space
+      // = the "natural" position without page breaks
+      const naturalTop = rect.top - contentTop - injectedSpace;
+      const naturalBottom = rect.bottom - contentTop - injectedSpace;
 
-      // Where the current page's content area ends
-      // Pages stack: page N's content area starts at
-      //   (N-1) * (contentAreaHeight + paddingTop + paddingBottom + PAGE_GAP) + paddingTop
-      // and ends at that + contentAreaHeight
-      const pageContentStart = (currentPage - 1) * (pageHeightPx + PAGE_GAP) + paddingTop;
-      const pageContentEnd = pageContentStart + contentAreaHeight;
+      // Where does the current page's content area end (in natural coords)?
+      const pageEnd = (currentPage - 1) * contentAreaHeight + contentAreaHeight;
 
-      // If the block's bottom exceeds the page content area...
-      if (blockBottom > pageContentEnd && blockTop < pageContentEnd) {
-        // Push this block to the next page's content start
-        const nextPageContentStart = currentPage * (pageHeightPx + PAGE_GAP) + paddingTop;
-        const pushAmount = nextPageContentStart - blockTop;
-        if (pushAmount > 0) {
-          block.style.marginTop = `${pushAmount}px`;
+      // If block crosses the page boundary...
+      if (naturalBottom > pageEnd && naturalTop < pageEnd) {
+        // Push this block to the start of the next page's content area
+        const nextPageStart = currentPage * contentAreaHeight;
+        // The actual push in rendered pixels must also account for
+        // the gap (bottom margin + visual gap + top margin)
+        const gapPixels = paddingBottom + PAGE_GAP + paddingTop;
+        const pushAmount = (nextPageStart - naturalTop) + (currentPage * gapPixels);
+        // But we already injected some space, so the actual CSS margin is:
+        const cssMargin = pushAmount - injectedSpace + (injectedSpace > 0 ? 0 : 0);
+
+        // Simpler: compute desired rendered position
+        const desiredRenderedTop = currentPage * stride;
+        const currentRenderedTop = rect.top - contentTop;
+        const margin = desiredRenderedTop - currentRenderedTop;
+
+        if (margin > 0) {
+          block.style.marginTop = `${margin}px`;
+          block.dataset.pageBreakMargin = "true";
+          injectedSpace += margin;
         }
         currentPage++;
-      } else if (blockTop >= (currentPage) * (pageHeightPx + PAGE_GAP)) {
-        // Block is already past the current page entirely
-        currentPage = Math.floor(blockTop / (pageHeightPx + PAGE_GAP)) + 1;
+      } else if (naturalTop >= pageEnd) {
+        // Block is entirely past the current page — advance page counter
+        while (currentPage * contentAreaHeight <= naturalTop) {
+          currentPage++;
+        }
       }
     }
 
-    // Determine total pages needed
+    // 5. Calculate total pages from the last block's rendered position
     const lastBlock = blocks[blocks.length - 1] as HTMLElement;
-    const lastBlockBottom = lastBlock.getBoundingClientRect().bottom - editorTop;
-    const totalPages = Math.max(1, Math.ceil(lastBlockBottom / (pageHeightPx + PAGE_GAP)));
+    const lastBottom = lastBlock.getBoundingClientRect().bottom - contentTop;
+    const totalPages = Math.max(1, Math.ceil(lastBottom / stride) || 1);
     setPageCount(totalPages);
-  }, [contentAreaHeight, pageHeightPx, paddingTop, paddingBottom]);
+  }, [contentAreaHeight, stride, paddingTop, paddingBottom]);
 
-  // Run the page break engine on every editor update and resize
+  // Run the page break engine on every editor update
   useEffect(() => {
     if (!editor) return;
 
@@ -109,12 +127,11 @@ export default function RichEditor({
       rafRef.current = requestAnimationFrame(applyPageBreaks);
     };
 
-    // Initial run after mount
-    const timer = setTimeout(run, 150);
+    const timer = setTimeout(run, 200);
     editor.on("update", run);
     editor.on("selectionUpdate", run);
 
-    // Watch for resize changes
+    // ResizeObserver for dynamic changes
     let ro: ResizeObserver | null = null;
     if (editorWrapperRef.current) {
       ro = new ResizeObserver(run);
@@ -141,7 +158,6 @@ export default function RichEditor({
     );
   }
 
-  // Total canvas height including gaps
   const totalHeight = pageCount * pageHeightPx + (pageCount - 1) * PAGE_GAP;
 
   return (
@@ -149,10 +165,10 @@ export default function RichEditor({
       className={`relative ${isRoteiro ? "writing-mode-roteiro" : ""}`}
       style={{ width: pageWidthPx, minHeight: totalHeight }}
     >
-      {/* ── Page backgrounds ─────────────────────────────────────── */}
+      {/* ── Page cards ────────────────────────────────────────────── */}
       {Array.from({ length: pageCount }).map((_, i) => (
         <div
-          key={`page-bg-${i}`}
+          key={`page-${i}`}
           className="absolute left-0 bg-white"
           style={{
             width: pageWidthPx,
@@ -161,38 +177,27 @@ export default function RichEditor({
             boxShadow: "0 1px 4px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
-          {/* ── Margin guides (subtle dashed lines) ──── */}
-          {/* Top margin line */}
+          {/* Bottom margin indicator */}
           <div
-            className="absolute left-0 right-0"
-            style={{
-              top: paddingTop,
-              marginLeft: paddingLeft,
-              marginRight: paddingRight,
-              borderBottom: "1px dashed rgba(184,149,106,0.15)",
-            }}
-          />
-          {/* Bottom margin line */}
-          <div
-            className="absolute left-0 right-0"
+            className="absolute left-0 right-0 pointer-events-none"
             style={{
               bottom: paddingBottom,
               marginLeft: paddingLeft,
               marginRight: paddingRight,
-              borderTop: "1px dashed rgba(184,149,106,0.15)",
+              borderTop: "1px dashed rgba(184,149,106,0.2)",
             }}
           />
 
-          {/* ── Page number ──── */}
+          {/* Page number */}
           {showPageNumbers && (isRoteiro ? i > 0 : true) && (
             <div
               className="absolute select-none pointer-events-none"
               style={{
                 top: paddingTop / 2 - 5,
                 right: paddingRight,
-                fontFamily: isRoteiro ? "'Courier New', monospace" : "inherit",
+                fontFamily: isRoteiro ? "'Courier New', monospace" : "var(--font-sans)",
                 fontSize: isRoteiro ? "12pt" : "10px",
-                color: "#999",
+                color: "#aaa",
               }}
             >
               {i + 1}.
@@ -210,8 +215,7 @@ export default function RichEditor({
           paddingTop,
           paddingLeft,
           paddingRight,
-          // Bottom padding ensures last page has room
-          paddingBottom: paddingBottom,
+          paddingBottom,
           minHeight: totalHeight,
         }}
       >
