@@ -753,6 +753,22 @@ export default function CoWriterApp() {
                 onChange={(e) => {
                   const newMode = e.target.value as WritingMode;
                   setWritingMode(newMode);
+
+                  // Forçar configurações Master Scenes para Roteiro Cinema
+                  if (newMode === "Roteiro Cinema") {
+                    setPageSettings({
+                      size: "Letter",
+                      orientacao: "retrato",
+                      margemSuperior: 25,   // 1 inch
+                      margemInferior: 25,   // 1 inch
+                      margemEsquerda: 38,   // 1.5 inches
+                      margemDireita: 25,    // 1 inch
+                    });
+                  } else {
+                    // Restaurar padrão ao sair do modo roteiro
+                    setPageSettings(DEFAULT_SETTINGS);
+                  }
+
                   handleConvert(newMode);
                 }}
                 className="w-full bg-white border border-paper-dark rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-bronze shadow-sm"

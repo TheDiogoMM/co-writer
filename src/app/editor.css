@@ -13,12 +13,13 @@
   font-style: italic;
 }
 
-/* Tipografia da prosa */
+/* ─── BASE TIPTAP ────────────────────────────────────────────────────── */
 .tiptap {
   outline: none;
   min-height: 100%;
-  padding-bottom: 50px;
 }
+
+/* ─── MODO LIVRO (Prosa) ──────────────────────────────────────────────── */
 
 .tiptap h1 {
   font-family: var(--font-heading);
@@ -29,89 +30,6 @@
   margin-bottom: 1.5rem;
   margin-top: 0;
 }
-
-/* ─── MODO ROTEIRO CINEMA - Padrão Master Scenes ───────────────────────────────── */
-
-.writing-mode-roteiro .tiptap {
-  font-family: 'Courier New', Courier, monospace !important;
-  font-size: 12pt !important;
-  line-height: 1 !important;
-  text-align: left !important;
-}
-
-.writing-mode-roteiro .tiptap p,
-.writing-mode-roteiro .tiptap h1,
-.writing-mode-roteiro .tiptap h2,
-.writing-mode-roteiro .tiptap h3,
-.writing-mode-roteiro .tiptap h4 {
-  text-indent: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* Slugline (Cabeçalho de Cena) - MAIÚSCULAS, margem superior */
-.tiptap h4.screenplay-scene,
-.tiptap .screenplay-scene {
-  text-transform: uppercase;
-  font-weight: normal;
-  font-size: 12pt !important;
-  margin-top: 24px !important;  /* 2 linhas */
-  margin-bottom: 24px !important;
-}
-
-/* Ação - Presente, focado no visível/audível */
-.tiptap .screenplay-action {
-  margin-bottom: 12px !important;  /* 1 linha */
-}
-.writing-mode-roteiro .tiptap p[data-type="action"] {
-  margin-bottom: 12px !important;
-}
-
-/* Personagem - MAIÚSCULAS, centralizado */
-.tiptap .screenplay-character {
-  text-transform: uppercase;
-  text-align: center !important;
-  width: 200px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  margin-top: 18px !important;  /* 1.5 linhas */
-  margin-bottom: 0 !important;
-  font-size: 12pt !important;
-}
-
-/* Diálogo - Centralizado, margens estreitas */
-.tiptap .screenplay-dialogue {
-  text-align: center !important;
-  width: 320px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  margin-bottom: 12px !important;
-  font-size: 12pt !important;
-}
-
-/* Parentético - Com parênteses corretos */
-.tiptap .screenplay-parenthetical {
-  text-align: center !important;
-  width: 220px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  margin-bottom: 0 !important;
-  font-size: 12pt !important;
-}
-.tiptap .screenplay-parenthetical::before { content: "("; }
-.tiptap .screenplay-parenthetical::after { content: ")"; }
-
-/* Transição - Direita, MAIÚSCULAS */
-.tiptap .screenplay-transition {
-  text-transform: uppercase;
-  text-align: right !important;
-  margin-top: 24px !important;
-  margin-bottom: 24px !important;
-}
-
-/* ─── FIM MODO ROTEIRO ───────────────────────────────────────────────────── */
-
-
 
 .tiptap h2 {
   font-family: var(--font-heading);
@@ -143,8 +61,8 @@
   text-align: justify;
 }
 
-/* Remover recuo em elementos de roteiro e cabeçalhos */
-.tiptap p[data-type], 
+/* Remove indentation after headings and for screenplay elements */
+.tiptap p[data-type],
 .tiptap h1 + p, .tiptap h2 + p, .tiptap h3 + p {
   text-indent: 0;
 }
@@ -171,13 +89,8 @@
   margin-bottom: 0.25rem;
 }
 
-.tiptap ul li {
-  list-style-type: disc;
-}
-
-.tiptap ol li {
-  list-style-type: decimal;
-}
+.tiptap ul li { list-style-type: disc; }
+.tiptap ol li { list-style-type: decimal; }
 
 .tiptap blockquote {
   border-left: 3px solid #b8956a;
@@ -204,7 +117,7 @@
   font-weight: bold;
   letter-spacing: 1.5rem;
   font-size: 1.2rem;
-  padding-left: 1.5rem; /* Ajuste para centralizar o espaçamento das letras */
+  padding-left: 1.5rem;
 }
 
 .tiptap code {
@@ -226,7 +139,115 @@
   font-size: 0.9em;
 }
 
-/* Seleção */
+/* Selection */
 .tiptap ::selection {
   background-color: rgba(184, 149, 106, 0.25);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODO ROTEIRO CINEMA — Padrão Master Scenes (Hollywood)
+   ═══════════════════════════════════════════════════════════════════════
+
+   Referências de medida (em polegadas, convertidas para a área de
+   conteúdo de uma página Letter com margem esquerda de 1.5" e direita
+   de 1"):
+
+   Área de conteúdo útil = 8.5" - 1.5" - 1" = 6"  (≈ 576px a 96dpi)
+
+   Elemento            Dist. da esquerda da PÁGINA   Largura
+   ─────────────────── ──────────────────────────── ────────
+   Slugline (Cena)     1.5"  (margem)                full width
+   Ação                1.5"  (margem)                full width
+   Personagem          3.7"  (= 2.2" da margem)      —
+   Parentético         3.1"  (= 1.6" da margem)      2"
+   Diálogo             2.5"  (= 1.0" da margem)      3.5"
+   Transição           direita                       —
+
+   Fonte: Courier New 12pt, line-height: 1 (espaçamento simples)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Global overrides for screenplay mode ──────────────────────────── */
+.writing-mode-roteiro .tiptap {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-size: 12pt !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  color: #111 !important;
+}
+
+/* Reset ALL elements inside screenplay mode */
+.writing-mode-roteiro .tiptap p,
+.writing-mode-roteiro .tiptap h1,
+.writing-mode-roteiro .tiptap h2,
+.writing-mode-roteiro .tiptap h3,
+.writing-mode-roteiro .tiptap h4 {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-size: 12pt !important;
+  line-height: 1 !important;
+  text-indent: 0 !important;
+  text-align: left !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  color: #111 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ── SLUGLINE (Scene Heading / Cabeçalho de Cena) ──────────────────── */
+/* INT. QUARTO DO HOTEL - NOITE                                         */
+/* All caps, flush left, double-space above, single below               */
+.writing-mode-roteiro .tiptap h4[data-type="scene"],
+.writing-mode-roteiro .tiptap .screenplay-scene {
+  text-transform: uppercase !important;
+  font-weight: bold !important;
+  margin-top: 24pt !important;   /* 2 blank lines (12pt × 2) */
+  margin-bottom: 12pt !important; /* 1 blank line */
+}
+
+/* ── ACTION (Ação / Descrição) ─────────────────────────────────────── */
+/* Present tense, no formatting. Full width. Single-spaced.             */
+.writing-mode-roteiro .tiptap p[data-type="action"],
+.writing-mode-roteiro .tiptap .screenplay-action {
+  margin-bottom: 12pt !important; /* 1 blank line between action blocks */
+}
+
+/* ── CHARACTER (Nome do Personagem) ────────────────────────────────── */
+/* ALL CAPS, positioned ~2.2" from left margin (≈ 3.7" from page edge) */
+.writing-mode-roteiro .tiptap p[data-type="character"],
+.writing-mode-roteiro .tiptap .screenplay-character {
+  text-transform: uppercase !important;
+  margin-left: 2.2in !important;
+  margin-top: 12pt !important;   /* 1 blank line above */
+  margin-bottom: 0 !important;
+}
+
+/* ── PARENTHETICAL (Indicação cênica) ──────────────────────────────── */
+/* In parentheses, positioned ~1.6" from left margin, ~2" wide         */
+.writing-mode-roteiro .tiptap p[data-type="parenthetical"],
+.writing-mode-roteiro .tiptap .screenplay-parenthetical {
+  margin-left: 1.6in !important;
+  width: 2in !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── DIALOGUE (Diálogo) ────────────────────────────────────────────── */
+/* Positioned 1" from left margin, ~3.5" wide                          */
+.writing-mode-roteiro .tiptap p[data-type="dialogue"],
+.writing-mode-roteiro .tiptap .screenplay-dialogue {
+  margin-left: 1in !important;
+  width: 3.5in !important;
+  margin-bottom: 12pt !important;
+}
+
+/* ── TRANSITION (Transição) ────────────────────────────────────────── */
+/* ALL CAPS, right-aligned (e.g., CUT TO:, FADE OUT.)                  */
+.writing-mode-roteiro .tiptap p[data-type="transition"],
+.writing-mode-roteiro .tiptap .screenplay-transition {
+  text-transform: uppercase !important;
+  text-align: right !important;
+  margin-top: 12pt !important;
+  margin-bottom: 12pt !important;
+}
+
+/* ═══ FIM MODO ROTEIRO ═══════════════════════════════════════════════ */
