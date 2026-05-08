@@ -164,19 +164,19 @@
    Diálogo             2.5"  (= 1.0" da margem)      3.5"
    Transição           direita                       —
 
-   Fonte: Courier New 12pt, line-height: 1 (espaçamento simples)
+   Fonte: Courier New 12pt, line-height: 1.2 (espaçamento simples)
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── Global overrides for screenplay mode ──────────────────────────── */
 .writing-mode-roteiro .tiptap {
   font-family: 'Courier New', Courier, monospace !important;
   font-size: 12pt !important;
-  line-height: 1 !important;
+  line-height: 1.2 !important;
   text-align: left !important;
   color: #111 !important;
 }
 
-/* Reset ALL elements inside screenplay mode */
+/* Reset ALL elements inside screenplay mode to ensure no prose inheritance */
 .writing-mode-roteiro .tiptap p,
 .writing-mode-roteiro .tiptap h1,
 .writing-mode-roteiro .tiptap h2,
@@ -184,7 +184,7 @@
 .writing-mode-roteiro .tiptap h4 {
   font-family: 'Courier New', Courier, monospace !important;
   font-size: 12pt !important;
-  line-height: 1 !important;
+  line-height: 1.2 !important;
   text-indent: 0 !important;
   text-align: left !important;
   font-weight: normal !important;

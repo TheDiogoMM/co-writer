@@ -15,7 +15,7 @@ interface RichEditorProps {
   showPageNumbers?: boolean;
 }
 
-const PAGE_GAP = 32; // visible gap between page cards
+const PAGE_GAP = 32;
 
 export default function RichEditor({
   editor,
@@ -30,117 +30,89 @@ export default function RichEditor({
 }: RichEditorProps) {
   const isRoteiro = writingMode === "Roteiro Cinema";
   const contentAreaHeight = pageHeightPx - paddingTop - paddingBottom;
-  // "stride" = distance from start of one page's content to start of next page's content
-  const stride = contentAreaHeight + paddingBottom + PAGE_GAP + paddingTop;
+  const deadZone = paddingBottom + PAGE_GAP + paddingTop;
+  const stride = contentAreaHeight + deadZone;
 
   const [pageCount, setPageCount] = useState(1);
-  const editorWrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
-  // ── Page break engine ──────────────────────────────────────────────
-  // Walks every top-level block in the Tiptap DOM.
-  // If a block's bottom edge would exceed the current page's printable
-  // area, injects margin-top to push it to the next page's content area.
   const applyPageBreaks = useCallback(() => {
-    const wrapper = editorWrapperRef.current;
+    const wrapper = wrapperRef.current;
     if (!wrapper) return;
-    const tiptapEl = wrapper.querySelector(".tiptap") as HTMLElement | null;
-    if (!tiptapEl) return;
-    const blocks = tiptapEl.children;
+    const tiptap = wrapper.querySelector(".tiptap") as HTMLElement | null;
+    if (!tiptap) return;
+    const blocks = Array.from(tiptap.children) as HTMLElement[];
     if (!blocks.length) { setPageCount(1); return; }
 
-    // 1. Reset all previously injected page-break spacing
-    for (let i = 0; i < blocks.length; i++) {
-      const el = blocks[i] as HTMLElement;
-      if (el.dataset.pageBreakMargin) {
-        el.style.marginTop = "";
-        delete el.dataset.pageBreakMargin;
+    // 1. Clear all injected margins
+    for (const b of blocks) {
+      if (b.dataset.pb) {
+        b.style.marginTop = "";
+        delete b.dataset.pb;
       }
     }
+    // 2. Reflow
+    void tiptap.offsetHeight;
 
-    // 2. Force reflow
-    void tiptapEl.offsetHeight;
+    // 3. Origin = top of .tiptap element
+    const originY = tiptap.getBoundingClientRect().top;
+    let maxPage = 1;
 
-    // 3. Get the top of the content area (the .tiptap element)
-    const contentTop = tiptapEl.getBoundingClientRect().top;
-
-    // 4. Walk blocks and inject breaks
-    // Track how much extra space we've injected so far
-    let injectedSpace = 0;
-    let currentPage = 1;
-
+    // 4. Process blocks sequentially
     for (let i = 0; i < blocks.length; i++) {
-      const block = blocks[i] as HTMLElement;
-      const rect = block.getBoundingClientRect();
+      const block = blocks[i];
+      
+      // Measure block relative to editor top
+      let rect = block.getBoundingClientRect();
+      let top = rect.top - originY;
+      let bottom = rect.bottom - originY;
 
-      // Block position relative to content start, minus injected space
-      // = the "natural" position without page breaks
-      const naturalTop = rect.top - contentTop - injectedSpace;
-      const naturalBottom = rect.bottom - contentTop - injectedSpace;
+      // Current page index (1-based)
+      const page = Math.floor(top / stride) + 1;
+      const pageContentEnd = (page - 1) * stride + contentAreaHeight;
 
-      // Where does the current page's content area end (in natural coords)?
-      const pageEnd = (currentPage - 1) * contentAreaHeight + contentAreaHeight;
-
-      // If block crosses the page boundary...
-      if (naturalBottom > pageEnd && naturalTop < pageEnd) {
-        // Push this block to the start of the next page's content area
-        const nextPageStart = currentPage * contentAreaHeight;
-        // The actual push in rendered pixels must also account for
-        // the gap (bottom margin + visual gap + top margin)
-        const gapPixels = paddingBottom + PAGE_GAP + paddingTop;
-        const pushAmount = (nextPageStart - naturalTop) + (currentPage * gapPixels);
-        // But we already injected some space, so the actual CSS margin is:
-        const cssMargin = pushAmount - injectedSpace + (injectedSpace > 0 ? 0 : 0);
-
-        // Simpler: compute desired rendered position
-        const desiredRenderedTop = currentPage * stride;
-        const currentRenderedTop = rect.top - contentTop;
-        const margin = desiredRenderedTop - currentRenderedTop;
-
-        if (margin > 0) {
-          block.style.marginTop = `${margin}px`;
-          block.dataset.pageBreakMargin = "true";
-          injectedSpace += margin;
-        }
-        currentPage++;
-      } else if (naturalTop >= pageEnd) {
-        // Block is entirely past the current page — advance page counter
-        while (currentPage * contentAreaHeight <= naturalTop) {
-          currentPage++;
+      // If block starts in the dead zone OR straddles the content end boundary
+      if (top > pageContentEnd - 1 || (bottom > pageContentEnd + 1 && top < pageContentEnd - 1)) {
+        const nextStart = page * stride;
+        const push = nextStart - top;
+        
+        if (push > 0) {
+          block.style.marginTop = `${push}px`;
+          block.dataset.pb = "1";
+          
+          // Re-measure after applying margin to affect subsequent blocks
+          void tiptap.offsetHeight; 
+          rect = block.getBoundingClientRect();
+          bottom = rect.bottom - originY;
         }
       }
+
+      // Track max page needed based on the bottom of this block
+      const blockBottomPage = Math.floor((bottom - 1) / stride) + 1;
+      if (blockBottomPage > maxPage) maxPage = blockBottomPage;
     }
 
-    // 5. Calculate total pages from the last block's rendered position
-    const lastBlock = blocks[blocks.length - 1] as HTMLElement;
-    const lastBottom = lastBlock.getBoundingClientRect().bottom - contentTop;
-    const totalPages = Math.max(1, Math.ceil(lastBottom / stride) || 1);
-    setPageCount(totalPages);
-  }, [contentAreaHeight, stride, paddingTop, paddingBottom]);
+    setPageCount(maxPage);
+  }, [contentAreaHeight, stride]);
 
-  // Run the page break engine on every editor update
   useEffect(() => {
     if (!editor) return;
-
     const run = () => {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(applyPageBreaks);
     };
-
-    const timer = setTimeout(run, 200);
+    const t = setTimeout(run, 200);
     editor.on("update", run);
     editor.on("selectionUpdate", run);
-
-    // ResizeObserver for dynamic changes
     let ro: ResizeObserver | null = null;
-    if (editorWrapperRef.current) {
+    if (wrapperRef.current) {
       ro = new ResizeObserver(run);
-      const tiptap = editorWrapperRef.current.querySelector(".tiptap");
-      if (tiptap) ro.observe(tiptap);
+      const el = wrapperRef.current.querySelector(".tiptap");
+      if (el) ro.observe(el);
     }
-
     return () => {
-      clearTimeout(timer);
+      clearTimeout(t);
       cancelAnimationFrame(rafRef.current);
       editor.off("update", run);
       editor.off("selectionUpdate", run);
@@ -148,27 +120,18 @@ export default function RichEditor({
     };
   }, [editor, applyPageBreaks]);
 
-  // ── Render ─────────────────────────────────────────────────────────
   if (!editor) {
-    return (
-      <div
-        className="bg-white shadow-lg animate-pulse rounded"
-        style={{ width: pageWidthPx, height: pageHeightPx }}
-      />
-    );
+    return <div className="bg-white shadow-lg animate-pulse" style={{ width: pageWidthPx, height: pageHeightPx }} />;
   }
 
-  const totalHeight = pageCount * pageHeightPx + (pageCount - 1) * PAGE_GAP;
+  const totalH = pageCount * pageHeightPx + (pageCount - 1) * PAGE_GAP;
 
   return (
-    <div
-      className={`relative ${isRoteiro ? "writing-mode-roteiro" : ""}`}
-      style={{ width: pageWidthPx, minHeight: totalHeight }}
-    >
-      {/* ── Page cards ────────────────────────────────────────────── */}
+    <div className={`relative ${isRoteiro ? "writing-mode-roteiro" : ""}`} style={{ width: pageWidthPx, minHeight: totalH }}>
+      {/* Page cards */}
       {Array.from({ length: pageCount }).map((_, i) => (
         <div
-          key={`page-${i}`}
+          key={i}
           className="absolute left-0 bg-white"
           style={{
             width: pageWidthPx,
@@ -177,48 +140,34 @@ export default function RichEditor({
             boxShadow: "0 1px 4px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
-          {/* Bottom margin indicator */}
-          <div
-            className="absolute left-0 right-0 pointer-events-none"
-            style={{
-              bottom: paddingBottom,
-              marginLeft: paddingLeft,
-              marginRight: paddingRight,
-              borderTop: "1px dashed rgba(184,149,106,0.2)",
-            }}
-          />
-
+          {/* Bottom margin line */}
+          <div className="absolute left-0 right-0 pointer-events-none" style={{
+            bottom: paddingBottom,
+            marginLeft: paddingLeft,
+            marginRight: paddingRight,
+            borderTop: "1px dashed rgba(184,149,106,0.25)",
+          }} />
           {/* Page number */}
           {showPageNumbers && (isRoteiro ? i > 0 : true) && (
-            <div
-              className="absolute select-none pointer-events-none"
-              style={{
-                top: paddingTop / 2 - 5,
-                right: paddingRight,
-                fontFamily: isRoteiro ? "'Courier New', monospace" : "var(--font-sans)",
-                fontSize: isRoteiro ? "12pt" : "10px",
-                color: "#aaa",
-              }}
-            >
+            <div className="absolute select-none pointer-events-none" style={{
+              top: paddingTop / 2 - 5,
+              right: paddingRight,
+              fontFamily: isRoteiro ? "'Courier New', monospace" : "var(--font-sans)",
+              fontSize: isRoteiro ? "12pt" : "10px",
+              color: "#aaa",
+            }}>
               {i + 1}.
             </div>
           )}
         </div>
       ))}
 
-      {/* ── Editor content ────────────────────────────────────────── */}
-      <div
-        ref={editorWrapperRef}
-        className="absolute top-0 left-0"
-        style={{
-          width: pageWidthPx,
-          paddingTop,
-          paddingLeft,
-          paddingRight,
-          paddingBottom,
-          minHeight: totalHeight,
-        }}
-      >
+      {/* Editor */}
+      <div ref={wrapperRef} className="absolute top-0 left-0" style={{
+        width: pageWidthPx,
+        paddingTop, paddingLeft, paddingRight, paddingBottom,
+        minHeight: totalH,
+      }}>
         <EditorContent editor={editor} />
       </div>
     </div>

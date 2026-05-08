@@ -13,9 +13,34 @@ export const Screenplay = Extension.create({
   name: 'screenplay',
 
   addStorage() {
-    return {
-      disabled: false,
-    }
+    return { disabled: false }
+  },
+
+  // Register class and data-type on paragraph/heading so they survive setContent()
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['paragraph', 'heading'],
+        attributes: {
+          class: {
+            default: null,
+            parseHTML: (element: HTMLElement) => element.getAttribute('class') || null,
+            renderHTML: (attributes: Record<string, any>) => {
+              if (!attributes.class) return {}
+              return { class: attributes.class }
+            },
+          },
+          'data-type': {
+            default: null,
+            parseHTML: (element: HTMLElement) => element.getAttribute('data-type') || null,
+            renderHTML: (attributes: Record<string, any>) => {
+              if (!attributes['data-type']) return {}
+              return { 'data-type': attributes['data-type'] }
+            },
+          },
+        },
+      },
+    ]
   },
 
   addCommands() {
@@ -69,7 +94,6 @@ export const Screenplay = Extension.create({
 
   addKeyboardShortcuts() {
     return {
-      // Alt+Number shortcuts to set element type directly
       'Alt-1': () => this.editor.commands.setScreenplayType('scene'),
       'Alt-2': () => this.editor.commands.setScreenplayType('action'),
       'Alt-3': () => this.editor.commands.setScreenplayType('character'),
@@ -77,114 +101,41 @@ export const Screenplay = Extension.create({
       'Alt-5': () => this.editor.commands.setScreenplayType('parenthetical'),
       'Alt-6': () => this.editor.commands.setScreenplayType('transition'),
 
-      // ── ENTER — Smart navigation between screenplay elements ──
-      // After Scene Heading → Action
-      // After Character → Dialogue
-      // After Parenthetical → Dialogue
-      // After Dialogue → Action
-      // After empty Action → Character (convenient for flow)
       Enter: () => {
         if (this.storage.disabled) return false
-        const { selection } = this.editor.state
-        const { $from } = selection
+        const { $from } = this.editor.state.selection
         const node = $from.parent
         const type = node.attrs['data-type']
-
-        // Not a screenplay element? Let default Enter handle it.
         if (!type) return false
 
-        if (type === 'scene') {
-          // After scene heading → new action line
-          this.editor.chain().focus()
-            .splitBlock()
-            .setParagraph()
-            .updateAttributes('paragraph', { class: 'screenplay-action', 'data-type': 'action' })
-            .run()
+        const nextType: Record<string, string> = {
+          scene: 'action', character: 'dialogue', parenthetical: 'dialogue',
+          dialogue: 'action', transition: 'scene',
+        }
+
+        if (type === 'action' && node.textContent.trim() === '') {
+          this.editor.commands.setScreenplayType('character')
           return true
         }
 
-        if (type === 'character') {
-          // After character name → dialogue
-          this.editor.chain().focus()
-            .splitBlock()
-            .setParagraph()
-            .updateAttributes('paragraph', { class: 'screenplay-dialogue', 'data-type': 'dialogue' })
-            .run()
+        const next = nextType[type]
+        if (next) {
+          this.editor.chain().focus().splitBlock().run()
+          this.editor.commands.setScreenplayType(next as any)
           return true
         }
-
-        if (type === 'parenthetical') {
-          // After parenthetical → dialogue
-          this.editor.chain().focus()
-            .splitBlock()
-            .setParagraph()
-            .updateAttributes('paragraph', { class: 'screenplay-dialogue', 'data-type': 'dialogue' })
-            .run()
-          return true
-        }
-
-        if (type === 'dialogue') {
-          // After dialogue → action
-          this.editor.chain().focus()
-            .splitBlock()
-            .setParagraph()
-            .updateAttributes('paragraph', { class: 'screenplay-action', 'data-type': 'action' })
-            .run()
-          return true
-        }
-
-        if (type === 'action') {
-          // Empty action line → switch to character (natural writing flow)
-          if (node.textContent.trim() === '') {
-            this.editor.commands.setScreenplayType('character')
-            return true
-          }
-          // Non-empty action → new action
-          this.editor.chain().focus()
-            .splitBlock()
-            .setParagraph()
-            .updateAttributes('paragraph', { class: 'screenplay-action', 'data-type': 'action' })
-            .run()
-          return true
-        }
-
-        if (type === 'transition') {
-          // After transition → scene heading
-          this.editor.chain().focus()
-            .splitBlock()
-            .setNode('heading', { level: 4 })
-            .updateAttributes('heading', { class: 'screenplay-scene', 'data-type': 'scene' })
-            .run()
-          return true
-        }
-
         return false
       },
 
-      // ── TAB — Cycle between element types ──
       Tab: () => {
         if (this.storage.disabled) return false
-        const { selection } = this.editor.state
-        const { $from } = selection
-        const node = $from.parent
-        const type = node.attrs['data-type']
-
-        if (!type || type === 'action' || type === 'scene') {
-          return this.editor.commands.setScreenplayType('character')
+        const type = this.editor.state.selection.$from.parent.attrs['data-type']
+        const cycle: Record<string, string> = {
+          action: 'character', scene: 'character', character: 'parenthetical',
+          parenthetical: 'dialogue', dialogue: 'transition', transition: 'scene',
         }
-        if (type === 'character') {
-          return this.editor.commands.setScreenplayType('parenthetical')
-        }
-        if (type === 'parenthetical') {
-          return this.editor.commands.setScreenplayType('dialogue')
-        }
-        if (type === 'dialogue') {
-          return this.editor.commands.setScreenplayType('transition')
-        }
-        if (type === 'transition') {
-          return this.editor.commands.setScreenplayType('scene')
-        }
-        return this.editor.commands.setScreenplayType('action')
+        const next = cycle[type || 'action'] || 'character'
+        return this.editor.commands.setScreenplayType(next as any)
       },
     }
   },
